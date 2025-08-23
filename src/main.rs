@@ -4,6 +4,7 @@ use std::time::Duration;
 mod handlers;
 mod models;
 mod routes;
+mod services;
 
 #[tokio::main]
 async fn main() {
