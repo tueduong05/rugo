@@ -12,6 +12,11 @@ pub struct UrlModel {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct UrlRequest {
+    pub url: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UrlResponse {
     pub id: i32,
     pub url: String,
