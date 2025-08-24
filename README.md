@@ -23,10 +23,10 @@ git clone https://github.com/tueduong05/rugo.git
 cd rugo
 ```
 
-### 2. Start the Docker containers:
+### 2. Start the database container:
 
 ```
-docker-compose up -d
+docker-compose up -d db
 ```
 
 ### 3. Create the database:
@@ -41,12 +41,36 @@ sqlx database create
 sqlx migrate run
 ```
 
-## Run
+## Deployment
 
-Once the setup is complete, ensure the database is running and execute the following command to start the application:
+### 1. Launch the database
 
 ```
-cargo run
+docker-compose up -d db
+```
+
+### 2. Prepare for offline build
+
+```
+cargo sqlx prepare
+```
+
+### 3. Stop the database
+
+```
+docker-compose down
+```
+
+### 4. Build the application
+
+```
+docker-compose build
+```
+
+### 5. Start the application
+
+```
+docker-compose up -d
 ```
 
 ## API Documentation
