@@ -1,13 +1,13 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use time::PrimitiveDateTime;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UrlModel {
     pub id: i32,
     pub url: String,
     pub short_code: String,
-    pub created_at: PrimitiveDateTime,
-    pub updated_at: PrimitiveDateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
     pub access_count: i32,
 }
 
@@ -21,8 +21,8 @@ pub struct UrlResponse {
     pub id: i32,
     pub url: String,
     pub short_code: String,
-    pub created_at: PrimitiveDateTime,
-    pub updated_at: PrimitiveDateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -30,8 +30,8 @@ pub struct UrlStatsResponse {
     pub id: i32,
     pub url: String,
     pub short_code: String,
-    pub created_at: PrimitiveDateTime,
-    pub updated_at: PrimitiveDateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
     pub access_count: i32,
 }
 
