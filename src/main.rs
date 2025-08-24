@@ -10,6 +10,8 @@ mod services;
 async fn main() {
     dotenvy::dotenv().ok();
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
+    let host_address = std::env::var("HOST_ADDRESS").expect("HOST_ADDRESS is not set");
+    let host_port = std::env::var("HOST_PORT").expect("HOST_PORT is not set");
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
@@ -20,6 +22,9 @@ async fn main() {
 
     let routes = routes::routes(pool);
 
-    println!("Server running at http://127.0.0.1:8080");
-    warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
+    let address: std::net::SocketAddr = format!("{}:{}", host_address, host_port)
+        .parse()
+        .expect("Invalid address format");
+    println!("Server running at http://{}", address);
+    warp::serve(routes).run(address).await;
 }

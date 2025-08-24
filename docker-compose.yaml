@@ -1,6 +1,21 @@
 name: rugo
 
 services:
+  app:
+    container_name: rugo
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@rugo-db:${DB_PORT}/${DB_NAME}
+      HOST_ADDRESS: 0.0.0.0
+      HOST_PORT: 8080
+    ports:
+      - 8080:8080
+
   db:
     container_name: rugo-db
     image: postgres:latest
