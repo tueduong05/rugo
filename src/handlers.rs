@@ -1,12 +1,9 @@
 use crate::models::{UrlRequest, UrlResponse, UrlStatsResponse};
 use crate::services::{self, ServiceError};
 use sqlx::PgPool;
-use warp::http::StatusCode;
+use warp::{Rejection, Reply, http::StatusCode};
 
-pub async fn create_short_url(
-    body: UrlRequest,
-    pool: PgPool,
-) -> Result<impl warp::Reply, warp::Rejection> {
+pub async fn create_short_url(body: UrlRequest, pool: PgPool) -> Result<impl Reply, Rejection> {
     match services::create_short_url(&body.url, pool).await {
         Ok(model) => {
             let response: UrlResponse = model.into();
@@ -32,7 +29,7 @@ pub async fn create_short_url(
 pub async fn retrieve_original_url(
     short_code: String,
     pool: PgPool,
-) -> Result<impl warp::Reply, warp::Rejection> {
+) -> Result<impl Reply, Rejection> {
     match services::retrieve_original_url(&short_code, pool).await {
         Ok(model) => {
             let response: UrlResponse = model.into();
@@ -59,7 +56,7 @@ pub async fn update_short_url(
     short_code: String,
     body: UrlRequest,
     pool: PgPool,
-) -> Result<impl warp::Reply, warp::Rejection> {
+) -> Result<impl Reply, Rejection> {
     match services::update_short_url(&short_code, &body.url, pool).await {
         Ok(model) => {
             let response: UrlResponse = model.into();
@@ -83,10 +80,7 @@ pub async fn update_short_url(
     }
 }
 
-pub async fn delete_short_url(
-    short_code: String,
-    pool: PgPool,
-) -> Result<impl warp::Reply, warp::Rejection> {
+pub async fn delete_short_url(short_code: String, pool: PgPool) -> Result<impl Reply, Rejection> {
     match services::delete_short_url(&short_code, pool).await {
         Ok(()) => Ok(warp::reply::with_status("", StatusCode::NO_CONTENT)),
         Err(e) => {
@@ -100,10 +94,7 @@ pub async fn delete_short_url(
     }
 }
 
-pub async fn get_url_statistics(
-    short_code: String,
-    pool: PgPool,
-) -> Result<impl warp::Reply, warp::Rejection> {
+pub async fn get_url_statistics(short_code: String, pool: PgPool) -> Result<impl Reply, Rejection> {
     match services::get_url_statistics(&short_code, pool).await {
         Ok(model) => {
             let response: UrlStatsResponse = model.into();

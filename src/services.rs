@@ -1,15 +1,17 @@
 use crate::models::UrlModel;
 use rand::distr::{Alphanumeric, SampleString};
-use sqlx::PgPool;
+use sqlx::{Error, PgPool};
+use std::fmt::{Display, Formatter};
+use url::Url;
 
 pub enum ServiceError {
     InvalidUrl,
     NotFound,
-    DatabaseError(sqlx::Error),
+    DatabaseError(Error),
 }
 
-impl std::fmt::Display for ServiceError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Display for ServiceError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             ServiceError::InvalidUrl => write!(f, "Invalid URL"),
             ServiceError::NotFound => write!(f, "URL not found"),
@@ -24,7 +26,7 @@ fn generate_short_code(length: usize) -> String {
 }
 
 pub async fn create_short_url(url: &str, pool: PgPool) -> Result<UrlModel, ServiceError> {
-    let parsed_url = url::Url::parse(url).map_err(|_| ServiceError::InvalidUrl)?;
+    let parsed_url = Url::parse(url).map_err(|_| ServiceError::InvalidUrl)?;
 
     let short_code = loop {
         let candidate = generate_short_code(5);
@@ -88,7 +90,7 @@ pub async fn update_short_url(
     url: &str,
     pool: PgPool,
 ) -> Result<UrlModel, ServiceError> {
-    let parsed_url = url::Url::parse(url).map_err(|_| ServiceError::InvalidUrl)?;
+    let parsed_url = Url::parse(url).map_err(|_| ServiceError::InvalidUrl)?;
 
     let model = sqlx::query_as!(
         UrlModel,

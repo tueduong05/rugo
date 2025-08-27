@@ -1,10 +1,8 @@
 use crate::handlers;
 use sqlx::PgPool;
-use warp::Filter;
+use warp::{Filter, Rejection, Reply};
 
-pub fn routes(
-    pool: PgPool,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let pool_filter = warp::any().map(move || pool.clone());
 
     let create_short_url_route = warp::path!("shorten")
@@ -39,4 +37,5 @@ pub fn routes(
         .or(update_short_url_route)
         .or(delete_short_url_route)
         .or(get_url_statistics_route)
+        .with(warp::trace::request())
 }
