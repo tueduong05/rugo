@@ -37,4 +37,5 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
         .or(update_short_url_route)
         .or(delete_short_url_route)
         .or(get_url_statistics_route)
+        .with(warp::trace::request())
 }
