@@ -1,5 +1,5 @@
 use sqlx::postgres::PgPoolOptions;
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 
 mod handlers;
 mod models;
@@ -22,7 +22,7 @@ async fn main() {
 
     let routes = routes::routes(pool);
 
-    let address: std::net::SocketAddr = format!("{}:{}", host_address, host_port)
+    let address: SocketAddr = format!("{}:{}", host_address, host_port)
         .parse()
         .expect("Invalid address format");
     println!("Server running at http://{}", address);
