@@ -1,0 +1,1 @@
+pub struct Email(String);

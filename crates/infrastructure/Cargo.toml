@@ -1,0 +1,6 @@
+[package]
+name = "infrastructure"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
