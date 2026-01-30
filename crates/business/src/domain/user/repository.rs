@@ -10,7 +10,7 @@ pub trait UserRepository {
     // Register
     fn exists_by_username(&self, username: &Username) -> Result<bool, DomainError>;
     fn exists_by_email(&self, email: &Email) -> Result<bool, DomainError>;
-    fn save(&self, user: User) -> Result<(), DomainError>;
+    fn save(&self, user: &User) -> Result<(), DomainError>;
 
     // Login
     fn find_by_identifier(&self, identifier: &LoginIdentifier)
@@ -20,7 +20,7 @@ pub trait UserRepository {
     fn find_by_refresh_token(&self, refresh_token: &str) -> Result<Option<User>, DomainError>;
     fn update_refresh_token(
         &self,
-        user_id: UserId,
-        token: Option<String>,
+        user_id: &UserId,
+        refresh_token: Option<String>,
     ) -> Result<(), DomainError>;
 }
