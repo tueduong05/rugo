@@ -13,27 +13,50 @@ use crate::{
     },
     domain::user::{
         entity::User,
+        error::DomainError,
         repository::UserRepository,
-        services::password_service::PasswordService,
-        value_objects::{email::Email, password::Password, user_id::UserId, username::Username},
+        services::password_services::{PasswordHasher, PasswordPolicy},
+        value_objects::{
+            email::Email, hashed_password::HashedPassword, user_id::UserId,
+            user_status::UserStatus, username::Username,
+        },
     },
 };
 
 struct RegisterInteractor {
     user_repo: Arc<dyn UserRepository>,
-    password_service: Arc<dyn PasswordService>,
+    password_policy: Arc<dyn PasswordPolicy>,
+    password_hasher: Arc<dyn PasswordHasher>,
     token_service: Arc<dyn TokenService>,
 }
 
 impl RegisterUseCase for RegisterInteractor {
-    fn execute(&self, req: RegisterRequest) -> Result<AuthResponse, AppError> {
+    async fn execute(&self, req: RegisterRequest) -> Result<AuthResponse, AppError> {
         req.validate().map_err(AppError::from)?;
+
+        if self.password_policy.validate(&req.password) == false {
+            return Err(DomainError::PasswordTooWeak.into());
+        }
 
         let username = Username::new(req.username)?;
         let email = Email::new(req.email)?;
-        let raw_password = Password::new(req.password)?;
 
-        let hashed_password = self.password_service.hash(&raw_password);
+        if self.user_repo.exists_by_username(&username).await? {
+            return Err(DomainError::UsernameTaken.into());
+        }
+        if self.user_repo.exists_by_email(&email).await? {
+            return Err(DomainError::EmailTaken.into());
+        }
+
+        let hashed_password = HashedPassword::new(self.password_hasher.hash(&req.password))?;
+
+        let user = User::new(
+            UserId::generate(),
+            username,
+            email,
+            hashed_password,
+            UserStatus::Verified,
+        );
 
         todo!()
     }

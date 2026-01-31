@@ -7,5 +7,5 @@ mod interactor;
 mod request;
 
 trait RegisterUseCase {
-    fn execute(&self, req: RegisterRequest) -> Result<AuthResponse, AppError>;
+    async fn execute(&self, req: RegisterRequest) -> Result<AuthResponse, AppError>;
 }

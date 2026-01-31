@@ -1,1 +1,1 @@
-pub mod password_service;
+pub mod password_services;

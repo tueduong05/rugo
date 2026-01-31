@@ -11,14 +11,16 @@ pub struct Username(String);
 
 impl Username {
     pub fn new(value: String) -> Result<Self, DomainError> {
-        let value = value.trim();
-
-        if !(value.len() >= 3 || value.len() <= 20) || !USERNAME_REGEX.is_match(value) {
+        if value != value.trim()
+            || value.len() < 3
+            || value.len() > 20
+            || !USERNAME_REGEX.is_match(&value)
+        {
             return Err(DomainError::Unexpected(
                 "Username does not meet domain requirements".into(),
             ));
         }
 
-        Ok(Self(value.into()))
+        Ok(Self(value))
     }
 }

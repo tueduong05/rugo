@@ -11,13 +11,16 @@ pub struct Email(String);
 
 impl Email {
     pub fn new(value: String) -> Result<Self, DomainError> {
-        let value = value.trim();
-        if value.is_empty() || value.len() > 256 || !EMAIL_REGEX.is_match(&value) {
+        if value.is_empty()
+            || value != value.trim()
+            || value.len() > 256
+            || !EMAIL_REGEX.is_match(&value)
+        {
             return Err(DomainError::Unexpected(
                 "Email does not meet domain requirements".into(),
             ));
         }
 
-        Ok(Self(value.into()))
+        Ok(Self(value))
     }
 }

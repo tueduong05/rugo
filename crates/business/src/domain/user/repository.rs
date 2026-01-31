@@ -6,19 +6,23 @@ use crate::domain::user::{
     },
 };
 
+#[async_trait::async_trait]
 pub trait UserRepository {
     // Register
-    fn exists_by_username(&self, username: &Username) -> Result<bool, DomainError>;
-    fn exists_by_email(&self, email: &Email) -> Result<bool, DomainError>;
-    fn save(&self, user: &User) -> Result<(), DomainError>;
+    async fn exists_by_username(&self, username: &Username) -> Result<bool, DomainError>;
+    async fn exists_by_email(&self, email: &Email) -> Result<bool, DomainError>;
+    async fn save(&self, user: &User) -> Result<(), DomainError>;
 
     // Login
-    fn find_by_identifier(&self, identifier: &LoginIdentifier)
-    -> Result<Option<User>, DomainError>;
+    async fn find_by_identifier(
+        &self,
+        identifier: &LoginIdentifier,
+    ) -> Result<Option<User>, DomainError>;
 
     // Refresh
-    fn find_by_refresh_token(&self, refresh_token: &str) -> Result<Option<User>, DomainError>;
-    fn update_refresh_token(
+    async fn find_by_refresh_token(&self, refresh_token: &str)
+    -> Result<Option<User>, DomainError>;
+    async fn update_refresh_token(
         &self,
         user_id: &UserId,
         refresh_token: Option<String>,
