@@ -5,6 +5,8 @@ pub enum DomainError {
     UsernameTaken,
     #[error("Email is taken")]
     EmailTaken,
+    #[error("Password too weak")]
+    PasswordTooWeak,
 
     // Login Errors
     #[error("Invalid identifier or password")]
@@ -30,7 +32,11 @@ pub enum DomainError {
     #[error("Refresh token revoked")]
     RefreshTokenRevoked,
 
+    // Infrastructure
+    #[error("Infrastructure error: {0}")]
+    Infrastructure(String),
+
     // Unexpected
-    #[error("Internal domain service error: {0}")]
-    Internal(String),
+    #[error("Unexpected error: {0}")]
+    Unexpected(String),
 }

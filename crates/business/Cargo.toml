@@ -4,5 +4,8 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+regex = "1.12.2"
 thiserror = "2.0.18"
-uuid = "1.20.0"
+uuid = { version = "1.20.0", features = ["v7"] }
+validator = { version = "0.20.0", features = ["derive"] }
+zxcvbn = "3.1.0"

@@ -1,10 +1,8 @@
-use crate::domain::user::value_objects::{
-    email::Email, user_id::UserId, user_status::UserStatus, username::Username,
-};
+use uuid::Uuid;
 
 pub struct UserProfileResponse {
-    pub id: UserId,
-    pub username: Username,
-    pub email: Email,
-    pub status: UserStatus,
+    pub id: Uuid,
+    pub username: String,
+    pub email: String,
+    pub status: String,
 }
