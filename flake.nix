@@ -33,6 +33,7 @@
           cargo-deny
           cargo-edit
           cargo-watch
+          just
           rust-analyzer
           rustToolchain
         ];

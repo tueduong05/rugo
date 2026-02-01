@@ -1,8 +1,9 @@
 [package]
 name = "business"
 authors.workspace = true
-version.workspace = true
 edition.workspace = true
+license.workspace = true
+version.workspace = true
 
 [dependencies]
 async-trait = "0.1.89"

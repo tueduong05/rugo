@@ -4,14 +4,16 @@ members = ["crates/business", "crates/infrastructure", "crates/presentation"]
 
 [workspace.package]
 authors = ["Thong Tue Duong <tueduong005@gmail.com>"]
-version = "0.1.0"
 edition = "2024"
+license = "MIT"
+version = "0.1.0"
 
 [package]
 name = "rugo"
 authors.workspace = true
-version.workspace = true
 edition.workspace = true
+license.workspace = true
+version.workspace = true
 
 [dependencies]
 business = { path = "crates/business"}
