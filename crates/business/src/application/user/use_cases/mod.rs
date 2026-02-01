@@ -1,1 +1,1 @@
-mod register;
+pub mod register;

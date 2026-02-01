@@ -7,6 +7,7 @@ use crate::domain::user::error::DomainError;
 pub static EMAIL_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$").expect("Invalid email regex"));
 
+#[derive(Clone, PartialEq)]
 pub struct Email(String);
 
 impl Email {
@@ -22,5 +23,9 @@ impl Email {
         }
 
         Ok(Self(value))
+    }
+
+    pub fn into_inner(self) -> String {
+        self.0
     }
 }

@@ -1,3 +1,4 @@
-mod dtos;
-mod services;
-mod use_cases;
+pub mod dtos;
+pub mod error;
+pub mod services;
+pub mod use_cases;

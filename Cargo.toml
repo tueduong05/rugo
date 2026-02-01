@@ -1,15 +1,8 @@
-[package]
-name = "rugo"
-version.workspace = true
-edition.workspace = true
-
 [workspace]
 resolver = "3"
-members = ["crates/business", "crates/infrastructure", "crates/presentation"]
+members = ["crates/business", "crates/infrastructure"]
 
 [workspace.package]
 authors = ["Thong Tue Duong <tueduong005@gmail.com>"]
 version = "0.1.0"
 edition = "2024"
-
-[dependencies]

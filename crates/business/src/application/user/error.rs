@@ -4,7 +4,7 @@ use crate::domain::user::error::DomainError;
 pub struct ValidationErrorDetail {
     pub field: String,
     pub message: String,
-    pub code: String, // e.g., INVALID_FORMAT
+    pub code: String,
 }
 
 #[derive(Debug, thiserror::Error)]

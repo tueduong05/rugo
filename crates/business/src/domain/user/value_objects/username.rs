@@ -7,6 +7,7 @@ use crate::domain::user::error::DomainError;
 pub static USERNAME_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[a-zA-Z0-9_\-]+$").expect("Invalid username regex"));
 
+#[derive(Clone, PartialEq)]
 pub struct Username(String);
 
 impl Username {
@@ -22,5 +23,9 @@ impl Username {
         }
 
         Ok(Self(value))
+    }
+
+    pub fn into_inner(self) -> String {
+        self.0
     }
 }

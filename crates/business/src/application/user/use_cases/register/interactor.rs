@@ -1,20 +1,19 @@
 use std::sync::Arc;
 
+use chrono::Utc;
 use validator::Validate;
 
 use crate::{
-    application::{
+    application::user::{
+        dtos::auth_response::AuthResponse,
         error::AppError,
-        user::{
-            dtos::auth_response::AuthResponse,
-            services::token_service::TokenService,
-            use_cases::register::{RegisterUseCase, request::RegisterRequest},
-        },
+        services::token_service::TokenService,
+        use_cases::register::{RegisterUseCase, request::RegisterRequest},
     },
     domain::user::{
-        entity::User,
+        entities::User,
         error::DomainError,
-        repository::UserRepository,
+        repositories::UserRepository,
         services::password_services::{PasswordHasher, PasswordPolicy},
         value_objects::{
             email::Email, hashed_password::HashedPassword, user_id::UserId,
@@ -23,13 +22,30 @@ use crate::{
     },
 };
 
-struct RegisterInteractor {
+pub struct RegisterInteractor {
     user_repo: Arc<dyn UserRepository>,
     password_policy: Arc<dyn PasswordPolicy>,
     password_hasher: Arc<dyn PasswordHasher>,
     token_service: Arc<dyn TokenService>,
 }
 
+impl RegisterInteractor {
+    pub fn new(
+        user_repo: Arc<dyn UserRepository>,
+        password_policy: Arc<dyn PasswordPolicy>,
+        password_hasher: Arc<dyn PasswordHasher>,
+        token_service: Arc<dyn TokenService>,
+    ) -> Self {
+        Self {
+            user_repo,
+            password_policy,
+            password_hasher,
+            token_service,
+        }
+    }
+}
+
+#[async_trait::async_trait]
 impl RegisterUseCase for RegisterInteractor {
     async fn execute(&self, req: RegisterRequest) -> Result<AuthResponse, AppError> {
         req.validate().map_err(AppError::from)?;
@@ -40,14 +56,6 @@ impl RegisterUseCase for RegisterInteractor {
 
         let username = Username::new(req.username)?;
         let email = Email::new(req.email)?;
-
-        if self.user_repo.exists_by_username(&username).await? {
-            return Err(DomainError::UsernameTaken.into());
-        }
-        if self.user_repo.exists_by_email(&email).await? {
-            return Err(DomainError::EmailTaken.into());
-        }
-
         let hashed_password = HashedPassword::new(self.password_hasher.hash(&req.password))?;
 
         let user = User::new(
@@ -56,8 +64,19 @@ impl RegisterUseCase for RegisterInteractor {
             email,
             hashed_password,
             UserStatus::Verified,
+            Utc::now(),
         );
 
-        todo!()
+        self.user_repo.save(&user).await?;
+
+        let tokens = self.token_service.issue_tokens(user.id).await?;
+
+        Ok(AuthResponse {
+            user_profile: user.into(),
+            access_token: tokens.access_token,
+            token_type: "Bearer".into(),
+            expires_in: tokens.expires_in,
+            refresh_token: tokens.refresh_token,
+        })
     }
 }

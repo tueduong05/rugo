@@ -1,5 +1,6 @@
 use crate::domain::user::error::DomainError;
 
+#[derive(Clone)]
 pub struct HashedPassword(String);
 
 impl HashedPassword {
@@ -11,5 +12,9 @@ impl HashedPassword {
         }
 
         Ok(Self(value))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
     }
 }
