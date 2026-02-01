@@ -487,11 +487,7 @@ name = "infrastructure"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "axum",
  "business",
- "serde",
- "serde_json",
- "tokio",
 ]
 
 [[package]]
@@ -600,6 +596,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "presentation"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "business",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "proc-macro-error-attr2"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -673,6 +681,17 @@ name = "regex-syntax"
 version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a2d987857b319362043e95f5353c0535c1f58eec5336fdfcf626430af7def58"
+
+[[package]]
+name = "rugo"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "business",
+ "infrastructure",
+ "presentation",
+ "tokio",
+]
 
 [[package]]
 name = "rustversion"

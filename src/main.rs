@@ -5,13 +5,13 @@ use business::application::user::use_cases::register::{
     RegisterUseCase, interactor::RegisterInteractor,
 };
 use infrastructure::user::{
-    http::routes::user_routes,
     persistence::mock_repositories::MockUserRepository,
     security::{
         mock_password_services::{MockPasswordHasher, MockPasswordPolicy},
         mock_token_service::MockTokenService,
     },
 };
+use presentation::user::http::routes::user_routes;
 use tokio::net::TcpListener;
 
 #[tokio::main]

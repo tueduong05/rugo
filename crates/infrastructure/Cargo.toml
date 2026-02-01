@@ -1,17 +1,10 @@
 [package]
 name = "infrastructure"
+authors.workspace = true
 version.workspace = true
 edition.workspace = true
-
-[[bin]]
-name = "rugo"
-path = "src/main.rs"
 
 [dependencies]
 business ={ path = "../business" }
 
-axum = "0.8.8"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
 async-trait = "0.1.89"
-tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
