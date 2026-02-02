@@ -10,7 +10,7 @@ pub struct User {
     pub id: UserId,
     pub username: Username,
     pub email: Email,
-    hashed_password: HashedPassword,
+    pub hashed_password: HashedPassword,
     pub status: UserStatus,
     pub created_at: DateTime<Utc>,
 }

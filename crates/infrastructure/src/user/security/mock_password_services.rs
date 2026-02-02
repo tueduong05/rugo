@@ -6,7 +6,7 @@ use business::domain::user::{
 pub struct MockPasswordPolicy;
 impl PasswordPolicy for MockPasswordPolicy {
     fn validate(&self, password: &str) -> bool {
-        password.len() >= 8
+        password.chars().count() >= 8
     }
 }
 
@@ -16,7 +16,7 @@ impl PasswordHasher for MockPasswordHasher {
         format!("hashed_{}", password)
     }
 
-    fn verify(&self, password: &str, hash: HashedPassword) -> bool {
+    fn verify(&self, password: &str, hash: &HashedPassword) -> bool {
         hash.as_str() == format!("hashed_{}", password)
     }
 }

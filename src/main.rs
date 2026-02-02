@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use axum::Router;
-use business::application::user::use_cases::register::{
-    RegisterUseCase, interactor::RegisterInteractor,
+use business::application::user::use_cases::{
+    login::interactor::LoginInteractor,
+    register::{RegisterUseCase, interactor::RegisterInteractor},
 };
 use infrastructure::user::{
     persistence::mock_repositories::MockUserRepository,
@@ -11,8 +12,10 @@ use infrastructure::user::{
         mock_token_service::MockTokenService,
     },
 };
-use presentation::user::http::routes::user_routes;
+use presentation::user::http::{UserState, routes::user_routes};
 use tokio::net::TcpListener;
+
+pub struct AppState {}
 
 #[tokio::main]
 async fn main() {
@@ -22,13 +25,24 @@ async fn main() {
     let token_service = Arc::new(MockTokenService);
 
     let register_interactor: Arc<dyn RegisterUseCase> = Arc::new(RegisterInteractor::new(
+        user_repo.clone(),
+        password_policy.clone(),
+        password_hasher.clone(),
+        token_service.clone(),
+    ));
+
+    let login_interactor = Arc::new(LoginInteractor::new(
         user_repo,
-        password_policy,
         password_hasher,
         token_service,
     ));
 
-    let app = Router::new().nest("/user", user_routes(register_interactor));
+    let state = UserState {
+        register_interactor,
+        login_interactor,
+    };
+
+    let app = Router::new().nest("/user", user_routes(state));
 
     let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
     println!("🚀 Server running on http://0.0.0.0:8080");

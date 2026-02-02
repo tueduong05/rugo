@@ -6,5 +6,5 @@ pub trait PasswordPolicy: Send + Sync {
 
 pub trait PasswordHasher: Send + Sync {
     fn hash(&self, password: &str) -> String;
-    fn verify(&self, password: &str, hash: HashedPassword) -> bool;
+    fn verify(&self, password: &str, hash: &HashedPassword) -> bool;
 }

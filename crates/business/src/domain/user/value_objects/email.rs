@@ -7,14 +7,14 @@ use crate::domain::user::error::DomainError;
 pub static EMAIL_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$").expect("Invalid email regex"));
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct Email(String);
 
 impl Email {
     pub fn new(value: String) -> Result<Self, DomainError> {
         if value.is_empty()
             || value != value.trim()
-            || value.len() > 256
+            || value.chars().count() > 256
             || !EMAIL_REGEX.is_match(&value)
         {
             return Err(DomainError::Unexpected(
