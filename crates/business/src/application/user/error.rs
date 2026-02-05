@@ -7,7 +7,7 @@ pub struct ValidationErrorDetail {
     pub code: String,
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Default, Debug, thiserror::Error)]
 #[error("{details:?}")]
 pub struct ValidationErrors {
     pub details: Vec<ValidationErrorDetail>,

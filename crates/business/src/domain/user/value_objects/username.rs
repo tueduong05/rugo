@@ -14,7 +14,7 @@ impl Username {
     pub fn new(value: String) -> Result<Self, DomainError> {
         let len = value.chars().count();
 
-        if value != value.trim() || len < 3 || len > 20 || !USERNAME_REGEX.is_match(&value) {
+        if value != value.trim() || !(3..=20).contains(&len) || !USERNAME_REGEX.is_match(&value) {
             return Err(DomainError::Unexpected(
                 "Username does not meet domain requirements".into(),
             ));

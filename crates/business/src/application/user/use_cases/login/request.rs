@@ -9,7 +9,7 @@ use crate::domain::user::value_objects::{email::EMAIL_REGEX, username::USERNAME_
 #[derive(Deserialize, Validate)]
 pub struct LoginRequest {
     #[serde(deserialize_with = "string_trim")]
-    #[validate(custom(function = "validate_identifier"))]
+    #[validate(length(min = 1), custom(function = "validate_identifier"))]
     pub identifier: String,
 
     #[validate(length(min = 8, message = "Password must be at least 8 characters"))]
@@ -19,6 +19,7 @@ pub struct LoginRequest {
 fn validate_identifier(identifier: &str) -> Result<(), ValidationError> {
     let len = identifier.chars().count();
 
+    #[allow(clippy::collapsible_else_if)]
     let error_data = if identifier.contains('@') {
         if len > 256 {
             Some(("length", "Email is too long"))

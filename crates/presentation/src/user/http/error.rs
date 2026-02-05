@@ -48,7 +48,7 @@ impl IntoResponse for HttpError {
                 (status, json!({ "error": domain_err.to_string() }))
             }
 
-            AppError::Technical(msg) => (
+            AppError::Technical(_msg) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 json!({ "error": "An unexpected error occurred" }),
             ),

@@ -15,7 +15,7 @@ pub struct RegisterRequest {
 
     #[serde(deserialize_with = "string_trim")]
     #[validate(
-        length(max = 256, message = "Email is too long"),
+        length(min = 1, max = 256, message = "Email is too long"),
         regex(path = EMAIL_REGEX, message = "Invalid email format")
     )]
     pub email: String,

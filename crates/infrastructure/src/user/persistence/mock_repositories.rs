@@ -7,6 +7,7 @@ use business::domain::user::{
     value_objects::{email::Email, login_identifier::LoginIdentifier, username::Username},
 };
 
+#[derive(Default)]
 pub struct MockUserRepository {
     users: Mutex<HashMap<String, User>>,
     emails: Mutex<HashMap<Email, String>>,

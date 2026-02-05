@@ -17,6 +17,6 @@ pub trait UserRepository: Send + Sync {
 }
 
 #[async_trait::async_trait]
-pub trait TokenRepository {
+pub trait TokenRepository: Send + Sync {
     async fn save(&self, refresh_token: RefreshToken) -> Result<(), DomainError>;
 }

@@ -50,7 +50,7 @@ impl RegisterUseCase for RegisterInteractor {
     async fn execute(&self, req: RegisterRequest) -> Result<AuthResponse, AppError> {
         req.validate().map_err(AppError::from)?;
 
-        if self.password_policy.validate(&req.password) == false {
+        if !self.password_policy.validate(&req.password) {
             return Err(DomainError::PasswordTooWeak.into());
         }
 
