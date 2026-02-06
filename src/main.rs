@@ -11,8 +11,8 @@ use business::application::user::use_cases::{
 use infrastructure::user::{
     persistence::mock_repositories::MockUserRepository,
     security::{
-        mock_password_services::{MockPasswordHasher, MockPasswordPolicy},
         mock_token_service::MockTokenService,
+        password_service::{Argon2idHasher, ZxcvbnPolicy},
     },
 };
 use presentation::user::http::{UserState, routes::user_routes};
@@ -23,8 +23,8 @@ pub struct AppState {}
 #[tokio::main]
 async fn main() {
     let user_repo = Arc::new(MockUserRepository::new());
-    let password_policy = Arc::new(MockPasswordPolicy);
-    let password_hasher = Arc::new(MockPasswordHasher);
+    let password_policy = Arc::new(ZxcvbnPolicy::new(3));
+    let password_hasher = Arc::new(Argon2idHasher);
     let token_service = Arc::new(MockTokenService);
 
     let register_interactor: Arc<dyn RegisterUseCase> = Arc::new(RegisterInteractor::new(
