@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use validator::Validate;
-
 use crate::{
     application::user::{
         dtos::auth_response::AuthResponse,
@@ -39,8 +37,6 @@ impl LoginInteractor {
 #[async_trait::async_trait]
 impl LoginUseCase for LoginInteractor {
     async fn execute(&self, req: LoginRequest) -> Result<AuthResponse, AppError> {
-        req.validate().map_err(AppError::from)?;
-
         let identifier =
             LoginIdentifier::parse(&req.identifier).map_err(|_| DomainError::InvalidCredentials)?;
 
@@ -57,7 +53,7 @@ impl LoginUseCase for LoginInteractor {
             return Err(DomainError::InvalidCredentials.into());
         }
 
-        let tokens = self.token_service.issue_tokens(user.id).await?;
+        let tokens = self.token_service.issue_tokens(&user.id).await?;
 
         Ok(AuthResponse {
             user_profile: user.into(),

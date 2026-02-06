@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use validator::Validate;
 
 use crate::{
     application::user::{
@@ -48,8 +47,6 @@ impl RegisterInteractor {
 #[async_trait::async_trait]
 impl RegisterUseCase for RegisterInteractor {
     async fn execute(&self, req: RegisterRequest) -> Result<AuthResponse, AppError> {
-        req.validate().map_err(AppError::from)?;
-
         if !self.password_policy.validate(&req.password) {
             return Err(DomainError::PasswordTooWeak.into());
         }
@@ -69,7 +66,7 @@ impl RegisterUseCase for RegisterInteractor {
 
         self.user_repo.save(&user).await?;
 
-        let tokens = self.token_service.issue_tokens(user.id).await?;
+        let tokens = self.token_service.issue_tokens(&user.id).await?;
 
         Ok(AuthResponse {
             user_profile: user.into(),

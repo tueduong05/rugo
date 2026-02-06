@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use validator::Validate;
-
 use crate::application::user::{
     error::AppError,
     services::token_service::TokenService,
@@ -27,11 +25,9 @@ impl RefreshSessionUseCase for RefreshSessionInteractor {
         &self,
         req: RefreshSessionRequest,
     ) -> Result<RefreshSessionResponse, AppError> {
-        req.validate().map_err(AppError::from)?;
-
         let new_tokens = self
             .token_service
-            .refresh_session(req.refresh_token)
+            .refresh_session(&req.refresh_token)
             .await?;
 
         Ok(RefreshSessionResponse {

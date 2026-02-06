@@ -8,11 +8,13 @@ pub struct Tokens {
 
 #[async_trait::async_trait]
 pub trait TokenService: Send + Sync {
-    async fn issue_tokens(&self, id: UserId) -> Result<Tokens, AppError>;
+    async fn issue_tokens(&self, id: &UserId) -> Result<Tokens, AppError>;
 
-    async fn refresh_session(&self, refresh_token: String) -> Result<Tokens, AppError>;
+    async fn refresh_session(&self, refresh_token: &str) -> Result<Tokens, AppError>;
 
-    async fn revoke_token(&self, refresh_token: String) -> Result<(), AppError>;
+    async fn revoke_token(&self, user_id: &UserId, refresh_token: &str) -> Result<(), AppError>;
 
-    async fn revoke_all(&self, user_id: UserId) -> Result<(), AppError>;
+    async fn revoke_all(&self, user_id: &UserId) -> Result<(), AppError>;
+
+    async fn verify_access_token(&self, access_token: &str) -> Result<UserId, AppError>;
 }

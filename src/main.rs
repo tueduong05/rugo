@@ -3,6 +3,7 @@ use std::sync::Arc;
 use axum::Router;
 use business::application::user::use_cases::{
     login::interactor::LoginInteractor,
+    logout::interactor::LogoutInteractor,
     refresh::interactor::RefreshSessionInteractor,
     register::{RegisterUseCase, interactor::RegisterInteractor},
 };
@@ -38,15 +39,19 @@ async fn main() {
         token_service.clone(),
     ));
 
-    let refresh_token_interactor = Arc::new(RefreshSessionInteractor::new(token_service));
+    let refresh_session_interactor = Arc::new(RefreshSessionInteractor::new(token_service.clone()));
+
+    let logout_interactor = Arc::new(LogoutInteractor::new(token_service.clone()));
 
     let state = UserState {
+        token_service,
         register_interactor,
         login_interactor,
-        refresh_token_interactor,
+        refresh_session_interactor,
+        logout_interactor,
     };
 
-    let app = Router::new().nest("/user", user_routes(state));
+    let app = Router::new().nest("/v1/user", user_routes(state));
 
     let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
     println!("🚀 Server running on http://0.0.0.0:8080");

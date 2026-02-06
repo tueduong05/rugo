@@ -13,3 +13,4 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 async-trait = "0.1.89"
 tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
+validator = "0.20.0"
