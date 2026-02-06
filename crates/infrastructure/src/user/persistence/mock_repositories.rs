@@ -40,8 +40,8 @@ impl UserRepository for MockUserRepository {
             return Err(DomainError::UsernameTaken);
         }
 
-        emails.insert(user.email.clone(), user.id.clone());
-        usernames.insert(user.username.clone(), user.id.clone());
+        emails.insert(user.email.clone(), user.id);
+        usernames.insert(user.username.clone(), user.id);
         users.insert(user.id, user.clone());
 
         Ok(())

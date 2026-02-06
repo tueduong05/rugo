@@ -5,7 +5,9 @@ use axum::{
 
 use crate::user::http::{
     UserState,
-    handlers::{get_me_handler, login_handler, logout_handler, refresh_session_handler, register_handler},
+    handlers::{
+        get_me_handler, login_handler, logout_handler, refresh_session_handler, register_handler,
+    },
 };
 
 pub fn user_routes(state: UserState) -> Router {

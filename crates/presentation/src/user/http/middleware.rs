@@ -28,9 +28,9 @@ where
             .and_then(|h| h.to_str().ok())
             .filter(|h| h.starts_with("Bearer "))
             .map(|h| &h[7..])
-            .ok_or_else(|| AppError::Domain(DomainError::InvalidAccessToken))?;
+            .ok_or(AppError::Domain(DomainError::InvalidAccessToken))?;
 
-        let user_id = token_service.verify_access_token(&auth_header).await?;
+        let user_id = token_service.verify_access_token(auth_header).await?;
 
         Ok(AuthenticatedUser(user_id))
     }
