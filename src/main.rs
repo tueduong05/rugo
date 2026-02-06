@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use axum::Router;
 use business::application::user::use_cases::{
+    get_me::interactor::GetMeInteractor,
     login::interactor::LoginInteractor,
     logout::interactor::LogoutInteractor,
     refresh::interactor::RefreshSessionInteractor,
@@ -34,7 +35,7 @@ async fn main() {
     ));
 
     let login_interactor = Arc::new(LoginInteractor::new(
-        user_repo,
+        user_repo.clone(),
         password_hasher,
         token_service.clone(),
     ));
@@ -43,12 +44,15 @@ async fn main() {
 
     let logout_interactor = Arc::new(LogoutInteractor::new(token_service.clone()));
 
+    let get_me_interactor = Arc::new(GetMeInteractor::new(user_repo));
+
     let state = UserState {
         token_service,
         register_interactor,
         login_interactor,
         refresh_session_interactor,
         logout_interactor,
+        get_me_interactor,
     };
 
     let app = Router::new().nest("/v1/user", user_routes(state));

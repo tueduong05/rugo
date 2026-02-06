@@ -3,8 +3,8 @@ use std::sync::Arc;
 use business::application::user::{
     services::token_service::TokenService,
     use_cases::{
-        login::LoginUseCase, logout::LogoutUseCase, refresh::RefreshSessionUseCase,
-        register::RegisterUseCase,
+        get_me::GetMeUseCase, login::LoginUseCase, logout::LogoutUseCase,
+        refresh::RefreshSessionUseCase, register::RegisterUseCase,
     },
 };
 
@@ -20,4 +20,5 @@ pub struct UserState {
     pub login_interactor: Arc<dyn LoginUseCase>,
     pub refresh_session_interactor: Arc<dyn RefreshSessionUseCase>,
     pub logout_interactor: Arc<dyn LogoutUseCase>,
+    pub get_me_interactor: Arc<dyn GetMeUseCase>,
 }

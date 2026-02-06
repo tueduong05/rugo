@@ -1,5 +1,9 @@
 #[derive(Debug, thiserror::Error)]
 pub enum DomainError {
+    // Resource Errors
+    #[error("User not found")]
+    UserNotFound,
+
     // Register Errors
     #[error("Username is taken")]
     UsernameTaken,

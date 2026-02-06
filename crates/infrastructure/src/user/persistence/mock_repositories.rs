@@ -4,14 +4,16 @@ use business::domain::user::{
     entities::User,
     error::DomainError,
     repositories::UserRepository,
-    value_objects::{email::Email, login_identifier::LoginIdentifier, username::Username},
+    value_objects::{
+        email::Email, login_identifier::LoginIdentifier, user_id::UserId, username::Username,
+    },
 };
 
 #[derive(Default)]
 pub struct MockUserRepository {
-    users: Mutex<HashMap<String, User>>,
-    emails: Mutex<HashMap<Email, String>>,
-    usernames: Mutex<HashMap<Username, String>>,
+    users: Mutex<HashMap<UserId, User>>,
+    emails: Mutex<HashMap<Email, UserId>>,
+    usernames: Mutex<HashMap<Username, UserId>>,
 }
 
 impl MockUserRepository {
@@ -38,11 +40,9 @@ impl UserRepository for MockUserRepository {
             return Err(DomainError::UsernameTaken);
         }
 
-        let id_str = user.id.to_string();
-
-        emails.insert(user.email.clone(), id_str.clone());
-        usernames.insert(user.username.clone(), id_str.clone());
-        users.insert(id_str, user.clone());
+        emails.insert(user.email.clone(), user.id.clone());
+        usernames.insert(user.username.clone(), user.id.clone());
+        users.insert(user.id, user.clone());
 
         Ok(())
     }
@@ -65,5 +65,16 @@ impl UserRepository for MockUserRepository {
         };
 
         Ok(user.cloned())
+    }
+
+    async fn find_by_user_id(&self, user_id: &UserId) -> Result<Option<User>, DomainError> {
+        let users = self
+            .users
+            .lock()
+            .map_err(|e| DomainError::Infrastructure(e.to_string()))?;
+
+        let user = users.get(user_id).cloned();
+
+        Ok(user)
     }
 }

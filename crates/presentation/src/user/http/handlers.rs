@@ -1,8 +1,9 @@
 use axum::{Json, extract::State, http::StatusCode};
 use business::application::user::{
-    dtos::auth_response::AuthResponse,
+    dtos::{auth_response::AuthResponse, user_profile_response::UserProfileResponse},
     error::AppError,
     use_cases::{
+        get_me::command::GetMeCommand,
         login::request::LoginRequest,
         logout::dtos::{LogoutCommand, LogoutRequest},
         refresh::dtos::{RefreshSessionRequest, RefreshSessionResponse},
@@ -54,4 +55,14 @@ pub async fn logout_handler(
 
     state.logout_interactor.execute(command).await?;
     Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn get_me_handler(
+    State(state): State<UserState>,
+    AuthenticatedUser(user_id): AuthenticatedUser,
+) -> Result<(StatusCode, Json<UserProfileResponse>), HttpError> {
+    let command = GetMeCommand::new(user_id);
+
+    let response = state.get_me_interactor.execute(command).await?;
+    Ok((StatusCode::OK, Json(response)))
 }
