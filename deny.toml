@@ -10,13 +10,6 @@ allow = [
 ]
 confidence-threshold = 0.8
 
-[bans]
-multiple-versions = "deny"
-skip = [
-    { name = "windows-sys", version = "0.60.2" },
-    { name = "windows-sys", version = "0.61.2" },
-]
-
 [sources]
 unknown-registry = "deny"
 unknown-git = "deny"

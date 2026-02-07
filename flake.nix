@@ -30,9 +30,8 @@
     devShells = forEachSupportedSystem ({pkgs}: {
       default = pkgs.mkShell {
         packages = with pkgs; [
+          bacon
           cargo-deny
-          cargo-edit
-          cargo-watch
           just
           rust-analyzer
           rustToolchain
