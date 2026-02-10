@@ -35,14 +35,15 @@ impl User {
     }
 }
 
+#[derive(Clone)]
 pub struct RefreshToken {
     pub id: u64,
-    pub family_id: u64,
     pub user_id: UserId,
     pub token: String,
     pub expires_at: u64,
     pub is_used: bool,
     pub is_revoked: bool,
+    pub version: u64,
 }
 
 impl RefreshToken {
@@ -50,11 +51,8 @@ impl RefreshToken {
         !self.is_revoked && !self.is_used && self.expires_at > now
     }
 
-    pub fn mark_as_used(&mut self) {
+    pub fn mark_used(&mut self) {
         self.is_used = true;
-    }
-
-    pub fn revoke(&mut self) {
-        self.is_revoked = true;
+        self.version += 1;
     }
 }

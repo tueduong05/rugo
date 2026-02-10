@@ -20,7 +20,7 @@ pub fn user_routes(state: UserState) -> Router {
     let protected_routes = Router::new()
         .route("/logout", post(logout_handler))
         .route("/me", get(get_me_handler))
-        .layer(Extension(state.token_service.clone()));
+        .layer(Extension(state.session_service.clone()));
 
     Router::new()
         .merge(public_routes)

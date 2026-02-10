@@ -2,25 +2,25 @@ use std::sync::Arc;
 
 use crate::application::user::{
     error::AppError,
-    services::token_service::TokenService,
+    services::session_service::SessionService,
     use_cases::logout::{LogoutUseCase, dtos::LogoutCommand},
 };
 
 pub struct LogoutInteractor {
-    token_service: Arc<dyn TokenService>,
+    session_service: Arc<dyn SessionService>,
 }
 
 impl LogoutInteractor {
-    pub fn new(token_service: Arc<dyn TokenService>) -> Self {
-        Self { token_service }
+    pub fn new(session_service: Arc<dyn SessionService>) -> Self {
+        Self { session_service }
     }
 }
 
 #[async_trait::async_trait]
 impl LogoutUseCase for LogoutInteractor {
     async fn execute(&self, command: LogoutCommand) -> Result<(), AppError> {
-        self.token_service
-            .revoke_token(&command.user_id, &command.refresh_token)
+        self.session_service
+            .end_session(&command.user_id, &command.refresh_token)
             .await?;
 
         Ok(())

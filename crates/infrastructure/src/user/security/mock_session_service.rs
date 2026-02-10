@@ -1,0 +1,47 @@
+use std::str::FromStr;
+
+use business::{
+    application::user::{
+        error::AppError,
+        services::session_service::{SessionService, Tokens},
+    },
+    domain::user::{error::DomainError, value_objects::user_id::UserId},
+};
+
+pub struct MockSessionService;
+
+#[async_trait::async_trait]
+impl SessionService for MockSessionService {
+    async fn start_session(&self, _id: &UserId) -> Result<Tokens, AppError> {
+        Ok(Tokens {
+            access_token: "mock_access_token".to_string(),
+            expires_in: 900,
+            refresh_token: "mock_refresh_token".to_string(),
+        })
+    }
+
+    async fn rotate_session(&self, _token: &str) -> Result<Tokens, AppError> {
+        Ok(Tokens {
+            access_token: "new_mock_access_token".to_string(),
+            expires_in: 900,
+            refresh_token: "new_mock_refresh_token".to_string(),
+        })
+    }
+
+    async fn end_session(&self, _user_id: &UserId, _token: &str) -> Result<(), AppError> {
+        Ok(())
+    }
+
+    async fn end_all_sessions(&self, _user_id: &UserId) -> Result<(), AppError> {
+        Ok(())
+    }
+
+    async fn authenticate(&self, access_token: &str) -> Result<UserId, AppError> {
+        match access_token {
+            "mock_access_token" => UserId::from_str("00000000-0000-0000-0000-000000000000")
+                .map_err(|_| DomainError::Unexpected("Invalid mock UserId".into()).into()),
+            "mock_expired_access_token" => Err(DomainError::SessionExpired.into()),
+            _ => Err(DomainError::InvalidSession.into()),
+        }
+    }
+}

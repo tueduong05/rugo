@@ -1,9 +1,9 @@
 use std::{collections::HashMap, sync::Mutex};
 
 use business::domain::user::{
-    entities::User,
+    entities::{RefreshToken, User},
     error::DomainError,
-    repositories::UserRepository,
+    repositories::{SessionRepository, UserRepository},
     value_objects::{
         email::Email, login_identifier::LoginIdentifier, user_id::UserId, username::Username,
     },
@@ -76,5 +76,85 @@ impl UserRepository for MockUserRepository {
         let user = users.get(user_id).cloned();
 
         Ok(user)
+    }
+}
+pub struct MockSessionRepository {
+    sessions: Mutex<HashMap<String, RefreshToken>>,
+}
+
+impl MockSessionRepository {
+    pub fn new() -> Self {
+        Self {
+            sessions: Mutex::new(HashMap::new()),
+        }
+    }
+}
+
+#[async_trait::async_trait]
+impl SessionRepository for MockSessionRepository {
+    async fn save(
+        &self,
+        session: RefreshToken,
+        old_version: Option<u64>,
+    ) -> Result<(), DomainError> {
+        let mut sessions = self.sessions.lock().unwrap();
+
+        match old_version {
+            None => {
+                if sessions.contains_key(&session.token) {
+                    return Err(DomainError::Infrastructure("Token already exists".into()));
+                }
+                sessions.insert(session.token.clone(), session);
+            }
+
+            Some(expected) => {
+                let existing = sessions
+                    .get_mut(&session.token)
+                    .ok_or(DomainError::InvalidSession)?;
+
+                if existing.version != expected {
+                    return Err(DomainError::ConcurrencyError);
+                }
+
+                *existing = session;
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn find_by_token(&self, token: &str) -> Result<RefreshToken, DomainError> {
+        let sessions = self.sessions.lock().unwrap();
+
+        sessions
+            .get(token)
+            .cloned()
+            .ok_or(DomainError::InvalidSession)
+    }
+
+    async fn revoke(&self, user_id: &UserId, token: &str) -> Result<(), DomainError> {
+        let mut sessions = self.sessions.lock().unwrap();
+
+        let session = sessions.get_mut(token).ok_or(DomainError::InvalidSession)?;
+
+        if &session.user_id != user_id {
+            return Err(DomainError::AccessDenied);
+        }
+
+        session.is_revoked = true;
+
+        Ok(())
+    }
+
+    async fn revoke_all(&self, user_id: &UserId) -> Result<(), DomainError> {
+        let mut sessions = self.sessions.lock().unwrap();
+
+        for session in sessions.values_mut() {
+            if &session.user_id == user_id {
+                session.is_revoked = true;
+            }
+        }
+
+        Ok(())
     }
 }

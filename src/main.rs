@@ -9,10 +9,10 @@ use business::application::user::use_cases::{
     register::{RegisterUseCase, interactor::RegisterInteractor},
 };
 use infrastructure::user::{
-    persistence::mock_repositories::MockUserRepository,
+    persistence::mock_repositories::{MockSessionRepository, MockUserRepository},
     security::{
-        mock_token_service::MockTokenService,
-        password_service::{Argon2idHasher, ZxcvbnPolicy},
+        jwt_service::JwtService,
+        password_services::{Argon2idHasher, ZxcvbnPolicy},
     },
 };
 use presentation::user::http::{UserState, routes::user_routes};
@@ -23,31 +23,39 @@ pub struct AppState {}
 #[tokio::main]
 async fn main() {
     let user_repo = Arc::new(MockUserRepository::new());
+    let session_repo = Arc::new(MockSessionRepository::new());
     let password_policy = Arc::new(ZxcvbnPolicy::new(3));
     let password_hasher = Arc::new(Argon2idHasher);
-    let token_service = Arc::new(MockTokenService);
+    let session_service = Arc::new(JwtService::new(
+        session_repo,
+        "123".into(),
+        "me".into(),
+        900,
+        3600,
+    ));
 
     let register_interactor: Arc<dyn RegisterUseCase> = Arc::new(RegisterInteractor::new(
         user_repo.clone(),
         password_policy.clone(),
         password_hasher.clone(),
-        token_service.clone(),
+        session_service.clone(),
     ));
 
     let login_interactor = Arc::new(LoginInteractor::new(
         user_repo.clone(),
         password_hasher,
-        token_service.clone(),
+        session_service.clone(),
     ));
 
-    let refresh_session_interactor = Arc::new(RefreshSessionInteractor::new(token_service.clone()));
+    let refresh_session_interactor =
+        Arc::new(RefreshSessionInteractor::new(session_service.clone()));
 
-    let logout_interactor = Arc::new(LogoutInteractor::new(token_service.clone()));
+    let logout_interactor = Arc::new(LogoutInteractor::new(session_service.clone()));
 
     let get_me_interactor = Arc::new(GetMeInteractor::new(user_repo));
 
     let state = UserState {
-        token_service,
+        session_service,
         register_interactor,
         login_interactor,
         refresh_session_interactor,

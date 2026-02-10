@@ -3,6 +3,8 @@ pub enum DomainError {
     // Resource Errors
     #[error("User not found")]
     UserNotFound,
+    #[error("Concurrency error")]
+    ConcurrencyError,
 
     // Register Errors
     #[error("Username is taken")]
@@ -22,19 +24,15 @@ pub enum DomainError {
     #[error("Account disabled")]
     AccountDisabled,
 
-    // Session & Authorization Errors
-    #[error("Invalid access token")]
-    InvalidAccessToken,
-    #[error("Permission denied")]
-    PermissionDenied,
+    // Session Errors
+    #[error("Access denied")]
+    AccessDenied,
+    #[error("Invalid session")]
+    InvalidSession,
     #[error("Session expired")]
     SessionExpired,
-
-    // Refresh Errors
-    #[error("Invalid refresh token")]
-    InvalidRefreshToken,
-    #[error("Refresh token revoked")]
-    RefreshTokenRevoked,
+    #[error("Session revoked")]
+    SessionRevoked,
 
     // Infrastructure
     #[error("Infrastructure error: {0}")]

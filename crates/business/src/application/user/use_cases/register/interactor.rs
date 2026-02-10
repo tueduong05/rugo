@@ -6,7 +6,7 @@ use crate::{
     application::user::{
         dtos::auth_response::AuthResponse,
         error::AppError,
-        services::token_service::TokenService,
+        services::session_service::SessionService,
         use_cases::register::{RegisterUseCase, request::RegisterRequest},
     },
     domain::user::{
@@ -25,7 +25,7 @@ pub struct RegisterInteractor {
     user_repo: Arc<dyn UserRepository>,
     password_policy: Arc<dyn PasswordPolicy>,
     password_hasher: Arc<dyn PasswordHasher>,
-    token_service: Arc<dyn TokenService>,
+    session_service: Arc<dyn SessionService>,
 }
 
 impl RegisterInteractor {
@@ -33,13 +33,13 @@ impl RegisterInteractor {
         user_repo: Arc<dyn UserRepository>,
         password_policy: Arc<dyn PasswordPolicy>,
         password_hasher: Arc<dyn PasswordHasher>,
-        token_service: Arc<dyn TokenService>,
+        session_service: Arc<dyn SessionService>,
     ) -> Self {
         Self {
             user_repo,
             password_policy,
             password_hasher,
-            token_service,
+            session_service,
         }
     }
 }
@@ -66,7 +66,7 @@ impl RegisterUseCase for RegisterInteractor {
 
         self.user_repo.save(&user).await?;
 
-        let tokens = self.token_service.issue_tokens(&user.id).await?;
+        let tokens = self.session_service.start_session(&user.id).await?;
 
         Ok(AuthResponse {
             user_profile: user.into(),

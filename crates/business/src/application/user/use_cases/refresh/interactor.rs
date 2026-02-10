@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::application::user::{
     error::AppError,
-    services::token_service::TokenService,
+    services::session_service::SessionService,
     use_cases::refresh::{
         RefreshSessionUseCase,
         dtos::{RefreshSessionRequest, RefreshSessionResponse},
@@ -10,12 +10,12 @@ use crate::application::user::{
 };
 
 pub struct RefreshSessionInteractor {
-    token_service: Arc<dyn TokenService>,
+    session_service: Arc<dyn SessionService>,
 }
 
 impl RefreshSessionInteractor {
-    pub fn new(token_service: Arc<dyn TokenService>) -> Self {
-        Self { token_service }
+    pub fn new(session_service: Arc<dyn SessionService>) -> Self {
+        Self { session_service }
     }
 }
 
@@ -26,8 +26,8 @@ impl RefreshSessionUseCase for RefreshSessionInteractor {
         req: RefreshSessionRequest,
     ) -> Result<RefreshSessionResponse, AppError> {
         let new_tokens = self
-            .token_service
-            .refresh_session(&req.refresh_token)
+            .session_service
+            .rotate_session(&req.refresh_token)
             .await?;
 
         Ok(RefreshSessionResponse {

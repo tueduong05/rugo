@@ -20,6 +20,16 @@ pub trait UserRepository: Send + Sync {
 }
 
 #[async_trait::async_trait]
-pub trait TokenRepository: Send + Sync {
-    async fn save(&self, refresh_token: RefreshToken) -> Result<(), DomainError>;
+pub trait SessionRepository: Send + Sync {
+    async fn save(
+        &self,
+        session: RefreshToken,
+        old_version: Option<u64>,
+    ) -> Result<(), DomainError>;
+
+    async fn find_by_token(&self, token: &str) -> Result<RefreshToken, DomainError>;
+
+    async fn revoke(&self, user_id: &UserId, token: &str) -> Result<(), DomainError>;
+
+    async fn revoke_all(&self, user_id: &UserId) -> Result<(), DomainError>;
 }

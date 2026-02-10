@@ -4,7 +4,7 @@ use crate::{
     application::user::{
         dtos::auth_response::AuthResponse,
         error::AppError,
-        services::token_service::TokenService,
+        services::session_service::SessionService,
         use_cases::login::{LoginUseCase, request::LoginRequest},
     },
     domain::user::{
@@ -17,19 +17,19 @@ use crate::{
 pub struct LoginInteractor {
     user_repo: Arc<dyn UserRepository>,
     password_hasher: Arc<dyn PasswordHasher>,
-    token_service: Arc<dyn TokenService>,
+    session_service: Arc<dyn SessionService>,
 }
 
 impl LoginInteractor {
     pub fn new(
         user_repo: Arc<dyn UserRepository>,
         password_hasher: Arc<dyn PasswordHasher>,
-        token_service: Arc<dyn TokenService>,
+        session_service: Arc<dyn SessionService>,
     ) -> Self {
         Self {
             user_repo,
             password_hasher,
-            token_service,
+            session_service,
         }
     }
 }
@@ -53,7 +53,7 @@ impl LoginUseCase for LoginInteractor {
             return Err(DomainError::InvalidCredentials.into());
         }
 
-        let tokens = self.token_service.issue_tokens(&user.id).await?;
+        let tokens = self.session_service.start_session(&user.id).await?;
 
         Ok(AuthResponse {
             user_profile: user.into(),

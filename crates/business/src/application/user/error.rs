@@ -36,9 +36,6 @@ pub enum AppError {
 
     #[error(transparent)]
     Domain(#[from] DomainError),
-
-    #[error("Technical error: {0}")]
-    Technical(String),
 }
 
 impl From<validator::ValidationErrors> for AppError {
