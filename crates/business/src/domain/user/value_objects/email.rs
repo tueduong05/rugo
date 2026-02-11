@@ -1,4 +1,4 @@
-use std::sync::LazyLock;
+use std::{fmt, sync::LazyLock};
 
 use regex::Regex;
 
@@ -27,8 +27,14 @@ impl Email {
         Ok(Self(value))
     }
 
-    pub fn into_inner(self) -> String {
-        self.0
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Display for Email {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 

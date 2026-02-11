@@ -1,4 +1,4 @@
-use std::{fmt, str};
+use std::fmt;
 
 use uuid::Uuid;
 
@@ -8,6 +8,10 @@ pub struct UserId(Uuid);
 impl UserId {
     pub fn generate() -> Self {
         Self(Uuid::now_v7())
+    }
+
+    pub fn parse(s: &str) -> Result<Self, uuid::Error> {
+        s.parse::<Uuid>().map(Self)
     }
 
     pub fn value(&self) -> Uuid {
@@ -21,11 +25,8 @@ impl fmt::Display for UserId {
     }
 }
 
-impl str::FromStr for UserId {
-    type Err = uuid::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let uuid = Uuid::parse_str(s)?;
-        Ok(Self(uuid))
+impl From<Uuid> for UserId {
+    fn from(uuid: Uuid) -> Self {
+        Self(uuid)
     }
 }

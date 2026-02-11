@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use business::{
     application::user::{
         error::AppError,
@@ -7,6 +5,7 @@ use business::{
     },
     domain::user::{error::DomainError, value_objects::user_id::UserId},
 };
+use sqlx::types::Uuid;
 
 pub struct MockSessionService;
 
@@ -38,8 +37,13 @@ impl SessionService for MockSessionService {
 
     async fn authenticate(&self, access_token: &str) -> Result<UserId, AppError> {
         match access_token {
-            "mock_access_token" => UserId::from_str("00000000-0000-0000-0000-000000000000")
-                .map_err(|_| DomainError::Unexpected("Invalid mock UserId".into()).into()),
+            "mock_access_token" => {
+                let uuid = Uuid::parse_str("00000000-0000-0000-0000-000000000000")
+                    .map_err(|_| DomainError::Unexpected("Invalid mock UserId".into()))?;
+
+                Ok(UserId::from(uuid))
+            }
+
             "mock_expired_access_token" => Err(DomainError::SessionExpired.into()),
             _ => Err(DomainError::InvalidSession.into()),
         }

@@ -1,4 +1,4 @@
-use std::sync::LazyLock;
+use std::{fmt, sync::LazyLock};
 
 use regex::Regex;
 
@@ -23,8 +23,14 @@ impl Username {
         Ok(Self(value))
     }
 
-    pub fn into_inner(self) -> String {
-        self.0
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Display for Username {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
@@ -38,7 +44,7 @@ mod tests {
         for name in names {
             let result = Username::new(name.to_string());
             assert!(result.is_ok(), "Should be valid: {}", name);
-            assert_eq!(result.unwrap().into_inner(), name);
+            assert_eq!(result.unwrap().to_string(), name);
         }
     }
 

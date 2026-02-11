@@ -79,7 +79,7 @@ impl SessionService for JwtService {
 
         let refresh_token = RefreshToken {
             id: 0,
-            user_id: user_id.clone(),
+            user_id: *user_id,
             token: refresh_token,
             expires_at,
             is_used: false,
@@ -142,9 +142,8 @@ impl SessionService for JwtService {
             _ => DomainError::InvalidSession,
         })?;
 
-        let user_id = token_data.claims.sub.parse::<UserId>().map_err(|_| {
-            DomainError::Unexpected("UserId does not meet domain requirements".into())
-        })?;
+        let user_id = UserId::parse(&token_data.claims.sub)
+            .map_err(|_| DomainError::Unexpected("Internal identity token is malformed".into()))?;
 
         Ok(user_id)
     }

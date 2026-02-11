@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{env, sync::Arc};
 
 use axum::Router;
 use business::application::user::use_cases::{
@@ -9,7 +9,9 @@ use business::application::user::use_cases::{
     register::{RegisterUseCase, interactor::RegisterInteractor},
 };
 use infrastructure::user::{
-    persistence::mock_repositories::{MockSessionRepository, MockUserRepository},
+    persistence::{
+        db, mock_repositories::MockSessionRepository, postgres_repositories::PostgresUserRepository,
+    },
     security::{
         jwt_service::JwtService,
         password_services::{Argon2idHasher, ZxcvbnPolicy},
@@ -22,7 +24,13 @@ pub struct AppState {}
 
 #[tokio::main]
 async fn main() {
-    let user_repo = Arc::new(MockUserRepository::new());
+    dotenvy::dotenv().expect("Failed to load .env");
+
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+    let pool = db::create_pool(&database_url).await.unwrap();
+
+    let user_repo = Arc::new(PostgresUserRepository::new(pool));
     let session_repo = Arc::new(MockSessionRepository::new());
     let password_policy = Arc::new(ZxcvbnPolicy::new(3));
     let password_hasher = Arc::new(Argon2idHasher);

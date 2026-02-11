@@ -15,8 +15,8 @@ impl From<User> for UserProfileResponse {
     fn from(user: User) -> Self {
         Self {
             id: user.id.value(),
-            username: user.username.into_inner(),
-            email: user.email.into_inner(),
+            username: user.username.to_string(),
+            email: user.email.to_string(),
             status: user.status.to_string(),
         }
     }

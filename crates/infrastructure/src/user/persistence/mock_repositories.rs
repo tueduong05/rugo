@@ -78,6 +78,8 @@ impl UserRepository for MockUserRepository {
         Ok(user)
     }
 }
+
+#[derive(Default)]
 pub struct MockSessionRepository {
     sessions: Mutex<HashMap<String, RefreshToken>>,
 }
