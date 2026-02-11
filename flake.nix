@@ -35,6 +35,7 @@
           just
           rust-analyzer
           rustToolchain
+          sqlx-cli
         ];
 
         env = {
