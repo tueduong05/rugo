@@ -40,14 +40,14 @@ pub struct RefreshToken {
     pub id: u64,
     pub user_id: UserId,
     pub token: String,
-    pub expires_at: u64,
+    pub expires_at: DateTime<Utc>,
     pub is_used: bool,
     pub is_revoked: bool,
     pub version: u64,
 }
 
 impl RefreshToken {
-    pub fn is_valid(&self, now: u64) -> bool {
+    pub fn is_valid(&self, now: DateTime<Utc>) -> bool {
         !self.is_revoked && !self.is_used && self.expires_at > now
     }
 

@@ -75,8 +75,7 @@ impl SessionService for JwtService {
         .map_err(|_| DomainError::Unexpected("Token signing failed".into()))?;
 
         let refresh_token = self.generate_random_token();
-        let expires_at =
-            (now + Duration::seconds(self.refresh_token_seconds as i64)).timestamp() as u64;
+        let expires_at = now + Duration::seconds(self.refresh_token_seconds as i64);
 
         let refresh_token = RefreshToken {
             id: 0,
@@ -104,8 +103,7 @@ impl SessionService for JwtService {
             .await
             .map_err(|_| DomainError::InvalidSession)?;
 
-        let now = Utc::now().timestamp() as u64;
-        if !session.is_valid(now) {
+        if !session.is_valid(Utc::now()) {
             if session.is_used && !session.is_revoked {
                 let _ = self.repo.revoke_all(&session.user_id).await;
             }
