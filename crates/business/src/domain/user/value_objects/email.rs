@@ -9,7 +9,7 @@ pub static EMAIL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
         .expect("Invalid email regex")
 });
 
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Email(String);
 
 impl Email {

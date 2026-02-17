@@ -2,7 +2,7 @@ use std::fmt;
 
 use uuid::Uuid;
 
-#[derive(Clone, Copy, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct UserId(Uuid);
 
 impl UserId {
