@@ -10,7 +10,8 @@ use business::application::user::use_cases::{
 };
 use infrastructure::user::{
     persistence::{
-        db, mock_repositories::MockSessionRepository, postgres_repositories::PostgresUserRepository,
+        db, postgres_session_repository::PostgresSessionRepository,
+        postgres_user_repository::PostgresUserRepository,
     },
     security::{
         jwt_service::JwtService,
@@ -30,8 +31,8 @@ async fn main() {
 
     let pool = db::create_pool(&database_url).await.unwrap();
 
-    let user_repo = Arc::new(PostgresUserRepository::new(pool));
-    let session_repo = Arc::new(MockSessionRepository::new());
+    let user_repo = Arc::new(PostgresUserRepository::new(pool.clone()));
+    let session_repo = Arc::new(PostgresSessionRepository::new(pool));
     let password_policy = Arc::new(ZxcvbnPolicy::new(3));
     let password_hasher = Arc::new(Argon2idHasher);
     let session_service = Arc::new(JwtService::new(

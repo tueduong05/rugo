@@ -18,3 +18,5 @@ serde = { version = "1.0.228", features = ["derive"] }
 rand = "0.9.2"
 base64 = "0.22.1"
 sqlx = { version = "0.8.6", features = ["chrono", "postgres", "runtime-tokio", "uuid"] }
+sha2 = "0.10.9"
+hex = "0.4.3"

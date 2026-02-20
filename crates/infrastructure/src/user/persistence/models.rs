@@ -78,25 +78,39 @@ impl UserRecord {
 
 #[derive(sqlx::FromRow)]
 pub struct RefreshTokenRecord {
-    pub id: u64,
+    pub id: i64,
     pub user_id: Uuid,
     pub token: String,
     pub expires_at: DateTime<Utc>,
     pub is_used: bool,
     pub is_revoked: bool,
-    pub version: u64,
+    pub version: i64,
 }
 
 impl From<&RefreshToken> for RefreshTokenRecord {
     fn from(refresh_token: &RefreshToken) -> Self {
         Self {
-            id: refresh_token.id,
+            id: refresh_token.id as i64,
             user_id: refresh_token.user_id.value(),
             token: refresh_token.token.clone(),
             expires_at: refresh_token.expires_at,
             is_used: refresh_token.is_used,
             is_revoked: refresh_token.is_revoked,
-            version: refresh_token.version,
+            version: refresh_token.version as i64,
         }
+    }
+}
+
+impl RefreshTokenRecord {
+    pub fn try_into_domain(self) -> Result<RefreshToken, DomainError> {
+        Ok(RefreshToken {
+            id: self.id as u64,
+            user_id: UserId::from(self.user_id),
+            token: String::from("PROTECTED_SESSION_METADATA"),
+            expires_at: self.expires_at,
+            is_used: self.is_used,
+            is_revoked: self.is_revoked,
+            version: self.version as u64,
+        })
     }
 }
