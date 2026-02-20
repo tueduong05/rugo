@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::application::user::dtos::user_profile_response::UserProfileResponse;
+use crate::application::user::common::user_profile_response::UserProfileResponse;
 
 #[derive(Serialize)]
 pub struct AuthResponse {

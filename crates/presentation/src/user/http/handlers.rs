@@ -1,6 +1,6 @@
 use axum::{Json, extract::State, http::StatusCode};
 use business::application::user::{
-    dtos::{auth_response::AuthResponse, user_profile_response::UserProfileResponse},
+    common::{auth_response::AuthResponse, user_profile_response::UserProfileResponse},
     error::AppError,
     use_cases::{
         get_me::command::GetMeCommand,

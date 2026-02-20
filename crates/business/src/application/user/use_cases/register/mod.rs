@@ -1,5 +1,5 @@
 use crate::application::user::{
-    dtos::auth_response::AuthResponse, error::AppError,
+    common::auth_response::AuthResponse, error::AppError,
     use_cases::register::request::RegisterRequest,
 };
 

@@ -1,5 +1,5 @@
 use crate::application::user::{
-    dtos::auth_response::AuthResponse, error::AppError, use_cases::login::request::LoginRequest,
+    common::auth_response::AuthResponse, error::AppError, use_cases::login::request::LoginRequest,
 };
 
 pub mod interactor;

@@ -4,7 +4,7 @@ use chrono::Utc;
 
 use crate::{
     application::user::{
-        dtos::auth_response::AuthResponse,
+        common::auth_response::AuthResponse,
         error::AppError,
         services::session_service::SessionService,
         use_cases::register::{RegisterUseCase, request::RegisterRequest},

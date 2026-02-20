@@ -1,5 +1,5 @@
 use crate::application::user::{
-    dtos::user_profile_response::UserProfileResponse, error::AppError,
+    common::user_profile_response::UserProfileResponse, error::AppError,
     use_cases::get_me::command::GetMeCommand,
 };
 
