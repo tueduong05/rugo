@@ -2,6 +2,8 @@
 pub enum DomainError {
     #[error("Short code already exists")]
     ShortCodeAlreadyExists,
+    #[error("Invalid link")]
+    InvalidLink,
 
     #[error("Invalid short code")]
     InvalidShortCode,

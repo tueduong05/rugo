@@ -7,7 +7,7 @@ version.workspace = true
 
 [dependencies]
 async-trait = "0.1.89"
-chrono = "0.4.43"
+chrono = { version = "0.4.43", features = ["serde"] }
 regex = "1.12.2"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_trim = "1.1.0"

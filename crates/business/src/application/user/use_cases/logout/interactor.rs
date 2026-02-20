@@ -1,9 +1,12 @@
 use std::sync::Arc;
 
-use crate::application::user::{
-    error::AppError,
-    services::session_service::SessionService,
-    use_cases::logout::{LogoutUseCase, dtos::LogoutCommand},
+use crate::{
+    application::user::{
+        error::AppError,
+        services::session_service::SessionService,
+        use_cases::logout::{LogoutUseCase, request::LogoutRequest},
+    },
+    domain::user::value_objects::user_id::UserId,
 };
 
 pub struct LogoutInteractor {
@@ -18,9 +21,9 @@ impl LogoutInteractor {
 
 #[async_trait::async_trait]
 impl LogoutUseCase for LogoutInteractor {
-    async fn execute(&self, command: LogoutCommand) -> Result<(), AppError> {
+    async fn execute(&self, user_id: UserId, req: LogoutRequest) -> Result<(), AppError> {
         self.session_service
-            .end_session(&command.user_id, &command.refresh_token)
+            .end_session(&user_id, &req.refresh_token)
             .await?;
 
         Ok(())
