@@ -12,5 +12,6 @@ regex = "1.12.2"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_trim = "1.1.0"
 thiserror = "2.0.18"
+url = "2.5.8"
 uuid = { version = "1.20.0", features = ["serde", "v7"] }
 validator = { version = "0.20.0", features = ["derive"] }

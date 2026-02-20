@@ -198,6 +198,7 @@ dependencies = [
  "serde",
  "serde_trim",
  "thiserror",
+ "url",
  "uuid",
  "validator",
 ]
