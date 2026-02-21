@@ -7,6 +7,7 @@ use crate::domain::{common::error::BaseDomainError, link::error::LinkDomainError
 pub static SHORTCODE_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?-u)^[a-zA-Z0-9_\-]+$").expect("Invalid username regex"));
 
+#[derive(Clone)]
 pub struct ShortCode(String);
 
 impl ShortCode {

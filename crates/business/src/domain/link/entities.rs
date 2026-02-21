@@ -2,10 +2,14 @@ use chrono::{DateTime, Utc};
 
 use crate::domain::{
     common::value_objects::hashed_password::HashedPassword,
-    link::value_objects::{original_link::OriginalLink, short_code::ShortCode},
+    link::{
+        error::LinkDomainError,
+        value_objects::{original_link::OriginalLink, short_code::ShortCode},
+    },
     user::value_objects::user_id::UserId,
 };
 
+#[derive(Clone)]
 pub struct Link {
     pub id: u64,
     pub user_id: Option<UserId>,
@@ -44,5 +48,29 @@ impl Link {
             created_at: Utc::now(),
             updated_at: Utc::now(),
         }
+    }
+
+    pub fn is_valid(
+        &self,
+        current_time: DateTime<Utc>,
+        current_clicks: u32,
+    ) -> Result<(), LinkDomainError> {
+        if !self.is_active {
+            return Err(LinkDomainError::LinkNotActive);
+        }
+
+        if let Some(expiry) = self.expires_at {
+            if current_time > expiry {
+                return Err(LinkDomainError::LinkExpired);
+            }
+        }
+
+        if let Some(max) = self.max_clicks {
+            if current_clicks >= max {
+                return Err(LinkDomainError::LinkClickLimitReached);
+            }
+        }
+
+        Ok(())
     }
 }
