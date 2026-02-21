@@ -1,4 +1,4 @@
-use crate::{application::user::error::AppError, domain::user::value_objects::user_id::UserId};
+use crate::{application::error::AppError, domain::user::value_objects::user_id::UserId};
 
 pub struct Tokens {
     pub access_token: String,

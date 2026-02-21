@@ -1,7 +1,7 @@
 use crate::{
-    application::link::{
+    application::{
         error::AppError,
-        use_cases::post_link::dtos::{PostLinkRequest, PostLinkResponse},
+        link::use_cases::post_link::dtos::{PostLinkRequest, PostLinkResponse},
     },
     domain::user::value_objects::user_id::UserId,
 };

@@ -1,5 +1,5 @@
 use crate::domain::user::{
-    error::DomainError,
+    error::UserDomainError,
     value_objects::{email::Email, username::Username},
 };
 
@@ -9,7 +9,7 @@ pub enum LoginIdentifier {
 }
 
 impl LoginIdentifier {
-    pub fn parse(identifier: &str) -> Result<Self, DomainError> {
+    pub fn parse(identifier: &str) -> Result<Self, UserDomainError> {
         if identifier.contains('@') {
             Ok(LoginIdentifier::Email(Email::new(identifier.into())?))
         } else {

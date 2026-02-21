@@ -1,14 +1,14 @@
 use std::fmt;
 
-use crate::domain::user::error::DomainError;
+use crate::domain::common::error::BaseDomainError;
 
 #[derive(Clone)]
 pub struct HashedPassword(String);
 
 impl HashedPassword {
-    pub fn new(value: String) -> Result<Self, DomainError> {
+    pub fn new(value: String) -> Result<Self, BaseDomainError> {
         if value.is_empty() {
-            return Err(DomainError::Unexpected(
+            return Err(BaseDomainError::Unexpected(
                 "Hashed password does not meet domain requirements".into(),
             ));
         }

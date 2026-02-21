@@ -2,7 +2,7 @@ use std::{fmt, sync::LazyLock};
 
 use regex::Regex;
 
-use crate::domain::user::error::DomainError;
+use crate::domain::{common::error::BaseDomainError, user::error::UserDomainError};
 
 pub static USERNAME_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?-u)^[a-zA-Z0-9_\-]+$").expect("Invalid username regex"));
@@ -11,13 +11,13 @@ pub static USERNAME_REGEX: LazyLock<Regex> =
 pub struct Username(String);
 
 impl Username {
-    pub fn new(value: String) -> Result<Self, DomainError> {
+    pub fn new(value: String) -> Result<Self, UserDomainError> {
         let len = value.len();
 
         if value != value.trim() || !(3..=20).contains(&len) || !USERNAME_REGEX.is_match(&value) {
-            return Err(DomainError::Unexpected(
+            return Err(BaseDomainError::Unexpected(
                 "Username does not meet domain requirements".into(),
-            ));
+            ).into());
         }
 
         Ok(Self(value))

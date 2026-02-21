@@ -1,4 +1,4 @@
-use crate::domain::user::value_objects::hashed_password::HashedPassword;
+use crate::domain::common::value_objects::hashed_password::HashedPassword;
 
 pub trait PasswordPolicy: Send + Sync {
     fn validate(&self, password: &str) -> bool;

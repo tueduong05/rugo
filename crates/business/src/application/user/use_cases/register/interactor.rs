@@ -3,20 +3,26 @@ use std::sync::Arc;
 use chrono::Utc;
 
 use crate::{
-    application::user::{
-        common::auth_response::AuthResponse,
+    application::{
         error::AppError,
-        services::session_service::SessionService,
-        use_cases::register::{RegisterUseCase, request::RegisterRequest},
+        user::{
+            common::auth_response::AuthResponse,
+            services::session_service::SessionService,
+            use_cases::register::{RegisterUseCase, request::RegisterRequest},
+        },
     },
-    domain::user::{
-        entities::User,
-        error::DomainError,
-        repositories::UserRepository,
-        services::password_services::{PasswordHasher, PasswordPolicy},
-        value_objects::{
-            email::Email, hashed_password::HashedPassword, user_id::UserId,
-            user_status::UserStatus, username::Username,
+    domain::{
+        common::{
+            services::password_services::{PasswordHasher, PasswordPolicy},
+            value_objects::hashed_password::HashedPassword,
+        },
+        user::{
+            entities::User,
+            error::UserDomainError,
+            repositories::UserRepository,
+            value_objects::{
+                email::Email, user_id::UserId, user_status::UserStatus, username::Username,
+            },
         },
     },
 };
@@ -48,12 +54,13 @@ impl RegisterInteractor {
 impl RegisterUseCase for RegisterInteractor {
     async fn execute(&self, req: RegisterRequest) -> Result<AuthResponse, AppError> {
         if !self.password_policy.validate(&req.password) {
-            return Err(DomainError::PasswordTooWeak.into());
+            return Err(UserDomainError::PasswordTooWeak.into());
         }
 
         let username = Username::new(req.username)?;
         let email = Email::new(req.email)?;
-        let hashed_password = HashedPassword::new(self.password_hasher.hash(&req.password))?;
+        let hashed_password = HashedPassword::new(self.password_hasher.hash(&req.password))
+            .map_err(|e| UserDomainError::Base(e))?;
 
         let user = User::new(
             UserId::generate(),

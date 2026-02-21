@@ -1,5 +1,5 @@
 use crate::{
-    application::user::{error::AppError, use_cases::logout::request::LogoutRequest},
+    application::{user::{use_cases::logout::request::LogoutRequest}, error::AppError},
     domain::user::value_objects::user_id::UserId,
 };
 

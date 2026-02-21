@@ -1,11 +1,13 @@
 use std::sync::Arc;
 
-use crate::application::user::{
+use crate::application::{
     error::AppError,
-    services::session_service::SessionService,
-    use_cases::refresh::{
-        RefreshSessionUseCase,
-        dtos::{RefreshSessionRequest, RefreshSessionResponse},
+    user::{
+        services::session_service::SessionService,
+        use_cases::refresh::{
+            RefreshSessionUseCase,
+            dtos::{RefreshSessionRequest, RefreshSessionResponse},
+        },
     },
 };
 

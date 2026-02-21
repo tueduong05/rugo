@@ -1,12 +1,14 @@
 use std::sync::Arc;
 
 use crate::{
-    application::user::{
-        common::user_profile_response::UserProfileResponse, error::AppError,
-        use_cases::get_me::GetMeUseCase,
+    application::{
+        error::AppError,
+        user::{
+            common::user_profile_response::UserProfileResponse, use_cases::get_me::GetMeUseCase,
+        },
     },
     domain::user::{
-        error::DomainError, repositories::UserRepository, value_objects::user_id::UserId,
+        error::UserDomainError, repositories::UserRepository, value_objects::user_id::UserId,
     },
 };
 
@@ -27,7 +29,7 @@ impl GetMeUseCase for GetMeInteractor {
             .user_repo
             .find_by_user_id(&user_id)
             .await?
-            .ok_or(DomainError::UserNotFound)?;
+            .ok_or(UserDomainError::UserNotFound)?;
 
         Ok(UserProfileResponse::from(user))
     }

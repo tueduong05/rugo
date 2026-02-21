@@ -2,7 +2,7 @@ use std::{fmt, sync::LazyLock};
 
 use regex::Regex;
 
-use crate::domain::user::error::DomainError;
+use crate::domain::{common::error::BaseDomainError, user::error::UserDomainError};
 
 pub static EMAIL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?i)^[\w!#$%&'*+/=?^_`{|}~.-]+@([\w-]+\.)+[\w-]{2,}$")
@@ -13,15 +13,16 @@ pub static EMAIL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
 pub struct Email(String);
 
 impl Email {
-    pub fn new(value: String) -> Result<Self, DomainError> {
+    pub fn new(value: String) -> Result<Self, UserDomainError> {
         if value.is_empty()
             || value != value.trim()
             || value.chars().count() > 256
             || !EMAIL_REGEX.is_match(&value)
         {
-            return Err(DomainError::Unexpected(
+            return Err(BaseDomainError::Unexpected(
                 "Email does not meet domain requirements".into(),
-            ));
+            )
+            .into());
         }
 
         Ok(Self(value))

@@ -1,5 +1,10 @@
+use crate::domain::common::error::BaseDomainError;
+
 #[derive(Debug, thiserror::Error)]
-pub enum DomainError {
+pub enum UserDomainError {
+    #[error(transparent)]
+    Base(#[from] BaseDomainError),
+
     // Resource Errors
     #[error("User not found")]
     UserNotFound,
@@ -33,12 +38,4 @@ pub enum DomainError {
     SessionExpired,
     #[error("Session revoked")]
     SessionRevoked,
-
-    // Infrastructure
-    #[error("Infrastructure error: {0}")]
-    Infrastructure(String),
-
-    // Unexpected
-    #[error("Unexpected error: {0}")]
-    Unexpected(String),
 }

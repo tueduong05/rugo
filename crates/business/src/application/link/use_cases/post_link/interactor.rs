@@ -1,15 +1,18 @@
 use std::sync::Arc;
 
 use crate::{
-    application::link::{
+    application::{
         error::AppError,
-        use_cases::post_link::{
+        link::use_cases::post_link::{
             PostLinkUseCase,
             dtos::{PostLinkRequest, PostLinkResponse},
         },
     },
     domain::{
-        link::{repositories::LinkRepository},
+        link::{
+            repositories::LinkRepository,
+            value_objects::{original_link::OriginalLink, short_code::ShortCode},
+        },
         user::value_objects::user_id::UserId,
     },
 };
@@ -31,6 +34,12 @@ impl PostLinkUseCase for PostLinkInteractor {
         user_id: Option<UserId>,
         req: PostLinkRequest,
     ) -> Result<PostLinkResponse, AppError> {
+        let original_link = OriginalLink::new(req.original_link)?;
+        let short_code = match req.short_code {
+            None => todo!("Random short code"),
+            Some(value) => ShortCode::new(value)?,
+        };
+
         todo!()
     }
 }

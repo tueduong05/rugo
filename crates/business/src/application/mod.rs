@@ -1,3 +1,4 @@
+pub mod error;
 pub mod link;
 pub mod link_analytics;
 pub mod user;

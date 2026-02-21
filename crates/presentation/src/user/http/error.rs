@@ -3,7 +3,7 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
-use business::application::user::error::AppError;
+use business::{application::error::AppError, domain::user::error::UserDomainError};
 use serde_json::json;
 
 pub struct HttpError(AppError);
@@ -33,19 +33,21 @@ impl IntoResponse for HttpError {
                 (StatusCode::BAD_REQUEST, json!({ "errors": errors }))
             }
 
-            AppError::Domain(domain_err) => {
-                let status = match domain_err {
-                    business::domain::user::error::DomainError::UsernameTaken
-                    | business::domain::user::error::DomainError::EmailTaken => {
+            // TODO: Do not leak sensitive errors to user
+            AppError::User(user_err) => {
+                let status = match user_err {
+                    UserDomainError::UsernameTaken | UserDomainError::EmailTaken => {
                         StatusCode::CONFLICT
                     }
-                    business::domain::user::error::DomainError::InvalidCredentials => {
-                        StatusCode::UNAUTHORIZED
-                    }
+                    UserDomainError::InvalidCredentials => StatusCode::UNAUTHORIZED,
                     _ => StatusCode::BAD_REQUEST,
                 };
 
-                (status, json!({ "error": domain_err.to_string() }))
+                (status, json!({ "error": user_err.to_string() }))
+            }
+
+            AppError::Link(_link_err) => {
+                todo!()
             }
         };
 

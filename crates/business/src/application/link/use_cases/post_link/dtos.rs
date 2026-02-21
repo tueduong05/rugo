@@ -21,9 +21,10 @@ pub struct PostLinkRequest {
     )]
     pub short_code: Option<String>,
 
-    pub expires_at: Option<u64>,
+    pub expires_at: Option<DateTime<Utc>>,
     pub password: Option<String>,
     pub max_clicks: Option<u32>,
+    pub is_active: bool,
 }
 
 #[derive(Serialize)]
@@ -33,5 +34,6 @@ pub struct PostLinkResponse {
     pub short_code: String,
     pub expires_at: Option<DateTime<Utc>>,
     pub max_clicks: Option<u32>,
+    pub is_active: bool,
     pub created_at: DateTime<Utc>,
 }

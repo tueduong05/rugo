@@ -1,5 +1,10 @@
+use crate::domain::common::error::BaseDomainError;
+
 #[derive(Debug, thiserror::Error)]
-pub enum DomainError {
+pub enum LinkDomainError {
+    #[error(transparent)]
+    Base(#[from] BaseDomainError),
+
     #[error("Short code already exists")]
     ShortCodeAlreadyExists,
     #[error("Invalid link")]
@@ -11,12 +16,4 @@ pub enum DomainError {
     LinkExpired,
     #[error("Wrong password")]
     WrongPassword,
-
-    // Infrastructure
-    #[error("Infrastructure error: {0}")]
-    Infrastructure(String),
-
-    // Unexpected
-    #[error("Unexpected error: {0}")]
-    Unexpected(String),
 }

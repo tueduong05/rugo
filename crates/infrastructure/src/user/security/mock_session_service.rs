@@ -1,9 +1,12 @@
 use business::{
-    application::user::{
+    application::{
         error::AppError,
-        services::session_service::{SessionService, Tokens},
+        user::services::session_service::{SessionService, Tokens},
     },
-    domain::user::{error::DomainError, value_objects::user_id::UserId},
+    domain::{
+        common::error::BaseDomainError,
+        user::{error::UserDomainError, value_objects::user_id::UserId},
+    },
 };
 use sqlx::types::Uuid;
 
@@ -38,14 +41,18 @@ impl SessionService for MockSessionService {
     async fn authenticate(&self, access_token: &str) -> Result<UserId, AppError> {
         match access_token {
             "mock_access_token" => {
-                let uuid = Uuid::parse_str("00000000-0000-0000-0000-000000000000")
-                    .map_err(|_| DomainError::Unexpected("Invalid mock UserId".into()))?;
+                let uuid =
+                    Uuid::parse_str("00000000-0000-0000-0000-000000000000").map_err(|_| {
+                        UserDomainError::Base(BaseDomainError::Unexpected(
+                            "Invalid mock UserId".into(),
+                        ))
+                    })?;
 
                 Ok(UserId::from(uuid))
             }
 
-            "mock_expired_access_token" => Err(DomainError::SessionExpired.into()),
-            _ => Err(DomainError::InvalidSession.into()),
+            "mock_expired_access_token" => Err(UserDomainError::SessionExpired.into()),
+            _ => Err(UserDomainError::InvalidSession.into()),
         }
     }
 }

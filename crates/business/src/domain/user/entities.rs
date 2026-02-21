@@ -1,8 +1,10 @@
 use chrono::{DateTime, Utc};
 
-use crate::domain::user::value_objects::{
-    email::Email, hashed_password::HashedPassword, user_id::UserId, user_status::UserStatus,
-    username::Username,
+use crate::domain::{
+    common::value_objects::hashed_password::HashedPassword,
+    user::value_objects::{
+        email::Email, user_id::UserId, user_status::UserStatus, username::Username,
+    },
 };
 
 #[derive(Clone)]

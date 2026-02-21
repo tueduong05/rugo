@@ -1,5 +1,5 @@
 use crate::{
-    application::user::{common::user_profile_response::UserProfileResponse, error::AppError},
+    application::{error::AppError, user::common::user_profile_response::UserProfileResponse},
     domain::user::value_objects::user_id::UserId,
 };
 

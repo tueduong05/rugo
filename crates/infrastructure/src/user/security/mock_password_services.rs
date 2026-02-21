@@ -1,4 +1,4 @@
-use business::domain::user::{
+use business::domain::common::{
     services::password_services::{PasswordHasher, PasswordPolicy},
     value_objects::hashed_password::HashedPassword,
 };

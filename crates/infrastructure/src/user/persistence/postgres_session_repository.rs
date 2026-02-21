@@ -1,6 +1,9 @@
-use business::domain::user::{
-    entities::RefreshToken, error::DomainError, repositories::SessionRepository,
-    value_objects::user_id::UserId,
+use business::domain::{
+    common::error::BaseDomainError,
+    user::{
+        entities::RefreshToken, error::UserDomainError, repositories::SessionRepository,
+        value_objects::user_id::UserId,
+    },
 };
 use sha2::{Digest, Sha256};
 use sqlx::PgPool;
@@ -29,13 +32,15 @@ impl SessionRepository for PostgresSessionRepository {
         &self,
         session: RefreshToken,
         old_version: Option<u64>,
-    ) -> Result<(), DomainError> {
+    ) -> Result<(), UserDomainError> {
         let record = RefreshTokenRecord::from(&session);
 
         match old_version {
             None => {
                 if record.token.is_empty() {
-                    return Err(DomainError::Infrastructure("Token cannot be empty".into()));
+                    return Err(UserDomainError::Base(BaseDomainError::Infrastructure(
+                        "Token cannot be empty".into(),
+                    )));
                 }
 
                 let hashed = self.hash_token(&record.token);
@@ -54,7 +59,7 @@ impl SessionRepository for PostgresSessionRepository {
                 )
                 .execute(&self.pool)
                 .await
-                .map_err(|e| DomainError::Infrastructure(e.to_string()))?;
+                .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?;
             }
 
             Some(expected_version) => {
@@ -73,10 +78,12 @@ impl SessionRepository for PostgresSessionRepository {
                 )
                 .execute(&self.pool)
                 .await
-                .map_err(|e| DomainError::Infrastructure(e.to_string()))?;
+                .map_err(|e| {
+                    UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string()))
+                })?;
 
                 if result.rows_affected() == 0 {
-                    return Err(DomainError::ConcurrencyError);
+                    return Err(UserDomainError::ConcurrencyError);
                 }
             }
         }
@@ -84,7 +91,7 @@ impl SessionRepository for PostgresSessionRepository {
         Ok(())
     }
 
-    async fn find_by_token(&self, token: &str) -> Result<RefreshToken, DomainError> {
+    async fn find_by_token(&self, token: &str) -> Result<RefreshToken, UserDomainError> {
         let hashed = self.hash_token(token);
 
         let record = sqlx::query_as!(
@@ -105,13 +112,13 @@ impl SessionRepository for PostgresSessionRepository {
         )
         .fetch_optional(&self.pool)
         .await
-        .map_err(|e| DomainError::Infrastructure(e.to_string()))?
-        .ok_or(DomainError::InvalidSession)?;
+        .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?
+        .ok_or(UserDomainError::InvalidSession)?;
 
         record.try_into_domain()
     }
 
-    async fn revoke(&self, user_id: &UserId, token: &str) -> Result<(), DomainError> {
+    async fn revoke(&self, user_id: &UserId, token: &str) -> Result<(), UserDomainError> {
         let hashed = self.hash_token(token);
 
         let result = sqlx::query!(
@@ -129,16 +136,16 @@ impl SessionRepository for PostgresSessionRepository {
         )
         .execute(&self.pool)
         .await
-        .map_err(|e| DomainError::Infrastructure(e.to_string()))?;
+        .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?;
 
         if result.rows_affected() == 0 {
-            return Err(DomainError::InvalidSession);
+            return Err(UserDomainError::InvalidSession);
         }
 
         Ok(())
     }
 
-    async fn revoke_all(&self, user_id: &UserId) -> Result<(), DomainError> {
+    async fn revoke_all(&self, user_id: &UserId) -> Result<(), UserDomainError> {
         sqlx::query!(
             r#"
             UPDATE refresh_tokens
@@ -149,7 +156,7 @@ impl SessionRepository for PostgresSessionRepository {
         )
         .execute(&self.pool)
         .await
-        .map_err(|e| DomainError::Infrastructure(e.to_string()))?;
+        .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?;
 
         Ok(())
     }

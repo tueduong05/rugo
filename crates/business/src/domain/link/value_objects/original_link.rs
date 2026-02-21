@@ -2,19 +2,19 @@ use std::fmt;
 
 use url::Url;
 
-use crate::domain::link::error::DomainError;
+use crate::domain::{common::error::BaseDomainError, link::error::LinkDomainError};
 
 pub struct OriginalLink(String);
 
 impl OriginalLink {
-    pub fn new(value: String) -> Result<Self, DomainError> {
+    pub fn new(value: String) -> Result<Self, LinkDomainError> {
         if value.is_empty() || value != value.trim() || value.len() > 4096 {
-            return Err(DomainError::Unexpected(
+            return Err(BaseDomainError::Unexpected(
                 "Original link does not meet domain requirements".into(),
-            ));
+            ).into());
         }
 
-        Url::parse(&value).map_err(|_| DomainError::InvalidLink)?;
+        Url::parse(&value).map_err(|_| LinkDomainError::InvalidLink)?;
 
         Ok(Self(value))
     }

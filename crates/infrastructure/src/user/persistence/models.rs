@@ -1,11 +1,14 @@
-use business::domain::user::{
-    entities::{RefreshToken, User},
-    error::DomainError,
-    value_objects::{
-        email::Email, hashed_password::HashedPassword, user_id::UserId, user_status::UserStatus,
-        username::Username,
+use business::domain::{
+    common::value_objects::hashed_password::HashedPassword,
+    user::{
+        entities::{RefreshToken, User},
+        error::UserDomainError,
+        value_objects::{
+            email::Email, user_id::UserId, user_status::UserStatus, username::Username,
+        },
     },
 };
+
 use chrono::{DateTime, Utc};
 use sqlx::{prelude::Type, types::Uuid};
 
@@ -64,7 +67,7 @@ impl From<&User> for UserRecord {
 }
 
 impl UserRecord {
-    pub fn try_into_domain(self) -> Result<User, DomainError> {
+    pub fn try_into_domain(self) -> Result<User, UserDomainError> {
         Ok(User {
             id: UserId::from(self.id),
             username: Username::new(self.username)?,
@@ -102,7 +105,7 @@ impl From<&RefreshToken> for RefreshTokenRecord {
 }
 
 impl RefreshTokenRecord {
-    pub fn try_into_domain(self) -> Result<RefreshToken, DomainError> {
+    pub fn try_into_domain(self) -> Result<RefreshToken, UserDomainError> {
         Ok(RefreshToken {
             id: self.id as u64,
             user_id: UserId::from(self.user_id),

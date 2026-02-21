@@ -1,10 +1,12 @@
 use std::sync::Arc;
 
 use crate::{
-    application::user::{
+    application::{
         error::AppError,
-        services::session_service::SessionService,
-        use_cases::logout::{LogoutUseCase, request::LogoutRequest},
+        user::{
+            services::session_service::SessionService,
+            use_cases::logout::{LogoutUseCase, request::LogoutRequest},
+        },
     },
     domain::user::value_objects::user_id::UserId,
 };

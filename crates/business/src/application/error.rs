@@ -1,4 +1,4 @@
-use crate::domain::user::error::DomainError;
+use crate::domain::{link::error::LinkDomainError, user::error::UserDomainError};
 
 #[derive(Debug)]
 pub struct ValidationErrorDetail {
@@ -35,7 +35,10 @@ pub enum AppError {
     Validation(ValidationErrors),
 
     #[error(transparent)]
-    Domain(#[from] DomainError),
+    User(#[from] UserDomainError),
+
+    #[error(transparent)]
+    Link(#[from] LinkDomainError),
 }
 
 impl From<validator::ValidationErrors> for AppError {
@@ -46,7 +49,7 @@ impl From<validator::ValidationErrors> for AppError {
             for error in field_errors {
                 let code = match error.code.as_ref() {
                     "length" => "INVALID_LENGTH",
-                    "regex" => "INVALID_FORMAT",
+                    "regex" | "url" => "INVALID_FORMAT",
                     _ => "VALIDATION_ERROR",
                 };
 

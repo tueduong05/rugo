@@ -2,7 +2,7 @@ use argon2::{
     Argon2, PasswordHash,
     password_hash::{PasswordHasher as ArgonHasher, PasswordVerifier, SaltString},
 };
-use business::domain::user::{
+use business::domain::common::{
     services::password_services::{PasswordHasher, PasswordPolicy},
     value_objects::hashed_password::HashedPassword,
 };

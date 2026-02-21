@@ -1,6 +1,6 @@
-use crate::application::user::{
+use crate::application::{
     error::AppError,
-    use_cases::refresh::dtos::{RefreshSessionRequest, RefreshSessionResponse},
+    user::use_cases::refresh::dtos::{RefreshSessionRequest, RefreshSessionResponse},
 };
 
 pub mod dtos;

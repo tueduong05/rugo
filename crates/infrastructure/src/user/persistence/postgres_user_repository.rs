@@ -1,11 +1,11 @@
 use std::borrow::Cow;
 
-use business::domain::user::{
+use business::domain::{common::error::BaseDomainError, user::{
     entities::User,
-    error::DomainError,
+    error::UserDomainError,
     repositories::UserRepository,
     value_objects::{login_identifier::LoginIdentifier, user_id::UserId},
-};
+}};
 use sqlx::PgPool;
 
 use crate::user::persistence::models::{DbUserStatus, UserRecord};
@@ -23,7 +23,7 @@ impl PostgresUserRepository {
 
 #[async_trait::async_trait]
 impl UserRepository for PostgresUserRepository {
-    async fn save(&self, user: &User) -> Result<(), DomainError> {
+    async fn save(&self, user: &User) -> Result<(), UserDomainError> {
         let user_record = UserRecord::from(user);
 
         sqlx::query!(
@@ -46,13 +46,13 @@ impl UserRepository for PostgresUserRepository {
             {
                 let constraint = db_err.constraint().unwrap_or("");
                 if constraint.contains("email") {
-                    return DomainError::EmailTaken;
+                    return UserDomainError::EmailTaken;
                 }
                 if constraint.contains("username") {
-                    return DomainError::UsernameTaken;
+                    return UserDomainError::UsernameTaken;
                 }
             }
-            DomainError::Infrastructure(e.to_string())
+            UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string()))
         })?;
 
         Ok(())
@@ -61,7 +61,7 @@ impl UserRepository for PostgresUserRepository {
     async fn find_by_identifier(
         &self,
         identifier: &LoginIdentifier,
-    ) -> Result<Option<User>, DomainError> {
+    ) -> Result<Option<User>, UserDomainError> {
         let row = match identifier {
             LoginIdentifier::Email(e) => {
                 sqlx::query_as!(
@@ -90,12 +90,12 @@ impl UserRepository for PostgresUserRepository {
                 .await
             }
         }
-        .map_err(|e| DomainError::Infrastructure(e.to_string()))?;
+        .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?;
 
         Ok(row.map(|r| r.try_into_domain()).transpose()?)
     }
 
-    async fn find_by_user_id(&self, user_id: &UserId) -> Result<Option<User>, DomainError> {
+    async fn find_by_user_id(&self, user_id: &UserId) -> Result<Option<User>, UserDomainError> {
         let record_opt = sqlx::query_as!(
             UserRecord,
             r#"
@@ -107,7 +107,7 @@ impl UserRepository for PostgresUserRepository {
         )
         .fetch_optional(&self.pool)
         .await
-        .map_err(|e| DomainError::Infrastructure(e.to_string()))?;
+        .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?;
 
         record_opt.map(|r| r.try_into_domain()).transpose()
     }

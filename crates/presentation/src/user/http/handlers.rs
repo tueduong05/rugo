@@ -1,12 +1,14 @@
 use axum::{Json, extract::State, http::StatusCode};
-use business::application::user::{
-    common::{auth_response::AuthResponse, user_profile_response::UserProfileResponse},
+use business::application::{
     error::AppError,
-    use_cases::{
-        login::request::LoginRequest,
-        logout::request::LogoutRequest,
-        refresh::dtos::{RefreshSessionRequest, RefreshSessionResponse},
-        register::request::RegisterRequest,
+    user::{
+        common::{auth_response::AuthResponse, user_profile_response::UserProfileResponse},
+        use_cases::{
+            login::request::LoginRequest,
+            logout::request::LogoutRequest,
+            refresh::dtos::{RefreshSessionRequest, RefreshSessionResponse},
+            register::request::RegisterRequest,
+        },
     },
 };
 use validator::Validate;

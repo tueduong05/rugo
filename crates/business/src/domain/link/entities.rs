@@ -21,7 +21,6 @@ pub struct Link {
 
 impl Link {
     pub fn new(
-        id: u64,
         user_id: Option<UserId>,
         original_link: OriginalLink,
         short_code: ShortCode,
@@ -30,11 +29,9 @@ impl Link {
         hashed_password: Option<String>,
         max_clicks: Option<u32>,
         is_active: bool,
-        created_at: DateTime<Utc>,
-        updated_at: DateTime<Utc>,
     ) -> Self {
         Link {
-            id,
+            id: 0,
             user_id,
             original_link,
             short_code,
@@ -43,8 +40,8 @@ impl Link {
             hashed_password,
             max_clicks,
             is_active,
-            created_at,
-            updated_at,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         }
     }
 }

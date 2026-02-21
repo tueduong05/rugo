@@ -1,5 +1,6 @@
-use crate::application::user::{
-    common::auth_response::AuthResponse, error::AppError, use_cases::login::request::LoginRequest,
+use crate::application::{
+    error::AppError,
+    user::{common::auth_response::AuthResponse, use_cases::login::request::LoginRequest},
 };
 
 pub mod interactor;

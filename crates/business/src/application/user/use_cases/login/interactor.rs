@@ -1,16 +1,20 @@
 use std::sync::Arc;
 
 use crate::{
-    application::user::{
-        common::auth_response::AuthResponse,
+    application::{
         error::AppError,
-        services::session_service::SessionService,
-        use_cases::login::{LoginUseCase, request::LoginRequest},
+        user::{
+            common::auth_response::AuthResponse,
+            services::session_service::SessionService,
+            use_cases::login::{LoginUseCase, request::LoginRequest},
+        },
     },
-    domain::user::{
-        error::DomainError, repositories::UserRepository,
-        services::password_services::PasswordHasher,
-        value_objects::login_identifier::LoginIdentifier,
+    domain::{
+        common::services::password_services::PasswordHasher,
+        user::{
+            error::UserDomainError, repositories::UserRepository,
+            value_objects::login_identifier::LoginIdentifier,
+        },
     },
 };
 
@@ -37,20 +41,20 @@ impl LoginInteractor {
 #[async_trait::async_trait]
 impl LoginUseCase for LoginInteractor {
     async fn execute(&self, req: LoginRequest) -> Result<AuthResponse, AppError> {
-        let identifier =
-            LoginIdentifier::parse(&req.identifier).map_err(|_| DomainError::InvalidCredentials)?;
+        let identifier = LoginIdentifier::parse(&req.identifier)
+            .map_err(|_| UserDomainError::InvalidCredentials)?;
 
         let user = self
             .user_repo
             .find_by_identifier(&identifier)
             .await?
-            .ok_or(DomainError::InvalidCredentials)?;
+            .ok_or(UserDomainError::InvalidCredentials)?;
 
         if !self
             .password_hasher
             .verify(&req.password, &user.hashed_password)
         {
-            return Err(DomainError::InvalidCredentials.into());
+            return Err(UserDomainError::InvalidCredentials.into());
         }
 
         let tokens = self.session_service.start_session(&user.id).await?;
