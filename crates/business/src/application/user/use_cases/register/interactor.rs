@@ -60,7 +60,7 @@ impl RegisterUseCase for RegisterInteractor {
         let username = Username::new(req.username)?;
         let email = Email::new(req.email)?;
         let hashed_password = HashedPassword::new(self.password_hasher.hash(&req.password))
-            .map_err(|e| UserDomainError::Base(e))?;
+            .map_err(UserDomainError::Base)?;
 
         let user = User::new(
             UserId::generate(),
@@ -73,6 +73,7 @@ impl RegisterUseCase for RegisterInteractor {
 
         self.user_repo.save(&user).await?;
 
+        // TODO: Potential failure, return error for user to login manually
         let tokens = self.session_service.start_session(&user.id).await?;
 
         Ok(AuthResponse {

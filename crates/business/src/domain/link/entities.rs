@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 
 use crate::domain::{
+    common::value_objects::hashed_password::HashedPassword,
     link::value_objects::{original_link::OriginalLink, short_code::ShortCode},
     user::value_objects::user_id::UserId,
 };
@@ -12,7 +13,7 @@ pub struct Link {
     pub short_code: ShortCode,
     pub is_custom: bool,
     pub expires_at: Option<DateTime<Utc>>,
-    pub hashed_password: Option<String>,
+    pub hashed_password: Option<HashedPassword>,
     pub max_clicks: Option<u32>,
     pub is_active: bool,
     pub created_at: DateTime<Utc>,
@@ -26,7 +27,7 @@ impl Link {
         short_code: ShortCode,
         is_custom: bool,
         expires_at: Option<DateTime<Utc>>,
-        hashed_password: Option<String>,
+        hashed_password: Option<HashedPassword>,
         max_clicks: Option<u32>,
         is_active: bool,
     ) -> Self {

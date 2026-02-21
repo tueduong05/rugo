@@ -43,7 +43,7 @@ impl SessionService for MockSessionService {
             "mock_access_token" => {
                 let uuid =
                     Uuid::parse_str("00000000-0000-0000-0000-000000000000").map_err(|_| {
-                        UserDomainError::Base(BaseDomainError::Unexpected(
+                        UserDomainError::from(BaseDomainError::Unexpected(
                             "Invalid mock UserId".into(),
                         ))
                     })?;

@@ -38,9 +38,9 @@ impl SessionRepository for PostgresSessionRepository {
         match old_version {
             None => {
                 if record.token.is_empty() {
-                    return Err(UserDomainError::Base(BaseDomainError::Infrastructure(
-                        "Token cannot be empty".into(),
-                    )));
+                    return Err(
+                        BaseDomainError::Infrastructure("Token cannot be empty".into()).into(),
+                    );
                 }
 
                 let hashed = self.hash_token(&record.token);
@@ -59,7 +59,7 @@ impl SessionRepository for PostgresSessionRepository {
                 )
                 .execute(&self.pool)
                 .await
-                .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?;
+                .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
             }
 
             Some(expected_version) => {
@@ -78,9 +78,7 @@ impl SessionRepository for PostgresSessionRepository {
                 )
                 .execute(&self.pool)
                 .await
-                .map_err(|e| {
-                    UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string()))
-                })?;
+                .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
                 if result.rows_affected() == 0 {
                     return Err(UserDomainError::ConcurrencyError);
@@ -112,7 +110,7 @@ impl SessionRepository for PostgresSessionRepository {
         )
         .fetch_optional(&self.pool)
         .await
-        .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?
+        .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?
         .ok_or(UserDomainError::InvalidSession)?;
 
         record.try_into_domain()
@@ -136,7 +134,7 @@ impl SessionRepository for PostgresSessionRepository {
         )
         .execute(&self.pool)
         .await
-        .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?;
+        .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
         if result.rows_affected() == 0 {
             return Err(UserDomainError::InvalidSession);
@@ -156,7 +154,7 @@ impl SessionRepository for PostgresSessionRepository {
         )
         .execute(&self.pool)
         .await
-        .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?;
+        .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
         Ok(())
     }

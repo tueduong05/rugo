@@ -74,7 +74,7 @@ impl UserRepository for MockUserRepository {
         let users = self
             .users
             .lock()
-            .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?;
+            .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
         let user = users.get(user_id).cloned();
 
@@ -107,9 +107,9 @@ impl SessionRepository for MockSessionRepository {
         match old_version {
             None => {
                 if sessions.contains_key(&session.token) {
-                    return Err(UserDomainError::Base(BaseDomainError::Infrastructure(
-                        "Token already exists".into(),
-                    )));
+                    return Err(
+                        BaseDomainError::Infrastructure("Token already exists".into()).into(),
+                    );
                 }
                 sessions.insert(session.token.clone(), session);
             }

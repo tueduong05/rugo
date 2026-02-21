@@ -7,6 +7,8 @@ pub enum LinkDomainError {
 
     #[error("Short code already exists")]
     ShortCodeAlreadyExists,
+    #[error("Short code collision limit reached")]
+    ShortCodeCollisionLimitReached,
     #[error("Invalid link")]
     InvalidLink,
 

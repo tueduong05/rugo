@@ -1,11 +1,14 @@
 use std::borrow::Cow;
 
-use business::domain::{common::error::BaseDomainError, user::{
-    entities::User,
-    error::UserDomainError,
-    repositories::UserRepository,
-    value_objects::{login_identifier::LoginIdentifier, user_id::UserId},
-}};
+use business::domain::{
+    common::error::BaseDomainError,
+    user::{
+        entities::User,
+        error::UserDomainError,
+        repositories::UserRepository,
+        value_objects::{login_identifier::LoginIdentifier, user_id::UserId},
+    },
+};
 use sqlx::PgPool;
 
 use crate::user::persistence::models::{DbUserStatus, UserRecord};
@@ -52,7 +55,7 @@ impl UserRepository for PostgresUserRepository {
                     return UserDomainError::UsernameTaken;
                 }
             }
-            UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string()))
+            BaseDomainError::Infrastructure(e.to_string()).into()
         })?;
 
         Ok(())
@@ -90,7 +93,7 @@ impl UserRepository for PostgresUserRepository {
                 .await
             }
         }
-        .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?;
+        .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
         Ok(row.map(|r| r.try_into_domain()).transpose()?)
     }
@@ -107,7 +110,7 @@ impl UserRepository for PostgresUserRepository {
         )
         .fetch_optional(&self.pool)
         .await
-        .map_err(|e| UserDomainError::Base(BaseDomainError::Infrastructure(e.to_string())))?;
+        .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
         record_opt.map(|r| r.try_into_domain()).transpose()
     }

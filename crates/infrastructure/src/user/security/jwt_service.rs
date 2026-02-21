@@ -76,7 +76,7 @@ impl SessionService for JwtService {
             &EncodingKey::from_secret(self.secret.as_ref()),
         )
         .map_err(|_| {
-            UserDomainError::Base(BaseDomainError::Unexpected("Token signing failed".into()))
+            UserDomainError::from(BaseDomainError::Unexpected("Token signing failed".into()))
         })?;
 
         let refresh_token = self.generate_random_token();
@@ -147,8 +147,11 @@ impl SessionService for JwtService {
             _ => UserDomainError::InvalidSession,
         })?;
 
-        let user_id = UserId::parse(&token_data.claims.sub)
-            .map_err(|_| UserDomainError::Base(BaseDomainError::Unexpected("Internal identity token is malformed".into())))?;
+        let user_id = UserId::parse(&token_data.claims.sub).map_err(|_| {
+            UserDomainError::from(BaseDomainError::Unexpected(
+                "Internal identity token is malformed".into(),
+            ))
+        })?;
 
         Ok(user_id)
     }
