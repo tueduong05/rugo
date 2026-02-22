@@ -13,7 +13,7 @@ use business::application::{
 };
 use validator::Validate;
 
-use crate::user::http::{UserState, error::HttpError, middleware::AuthenticatedUser};
+use crate::{common::middleware::AuthenticatedUser, error::HttpError, user::UserState};
 
 pub async fn register_handler(
     State(state): State<UserState>,

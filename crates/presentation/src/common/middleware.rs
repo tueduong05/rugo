@@ -6,7 +6,7 @@ use business::{
     domain::user::{error::UserDomainError, value_objects::user_id::UserId},
 };
 
-use crate::user::http::error::HttpError;
+use crate::error::HttpError;
 
 pub struct AuthenticatedUser(pub UserId);
 

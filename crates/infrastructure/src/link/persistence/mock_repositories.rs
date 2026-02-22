@@ -33,6 +33,6 @@ impl LinkRepository for MockLinkRepository {
         links
             .get(&short_code.to_string())
             .cloned()
-            .ok_or(LinkDomainError::InvalidLink)
+            .ok_or(LinkDomainError::InvalidShortCode)
     }
 }

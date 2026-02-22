@@ -14,17 +14,28 @@ pub struct PostLinkRequest {
     )]
     pub original_link: String,
 
-    #[serde(deserialize_with = "option_string_trim")]
+    #[serde(default, deserialize_with = "option_string_trim")]
     #[validate(
         length(min = 3, max = 20, message = "Short code must be between 3 and 20 characters"),
         regex(path = SHORTCODE_REGEX, message = "Short code contains invalid characters")
     )]
     pub short_code: Option<String>,
 
+    #[serde(default)]
     pub expires_at: Option<DateTime<Utc>>,
+
+    #[serde(default)]
     pub password: Option<String>,
+
+    #[serde(default)]
     pub max_clicks: Option<u32>,
+
+    #[serde(default = "default_is_active")]
     pub is_active: bool,
+}
+
+fn default_is_active() -> bool {
+    true
 }
 
 #[derive(Serialize)]

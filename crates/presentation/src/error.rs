@@ -3,7 +3,10 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
-use business::{application::error::AppError, domain::user::error::UserDomainError};
+use business::{
+    application::error::AppError,
+    domain::{link::error::LinkDomainError, user::error::UserDomainError},
+};
 use serde_json::json;
 
 pub struct HttpError(AppError);
@@ -46,8 +49,16 @@ impl IntoResponse for HttpError {
                 (status, json!({ "error": user_err.to_string() }))
             }
 
-            AppError::Link(_link_err) => {
-                todo!()
+            AppError::Link(link_err) => {
+                let status = match link_err {
+                    LinkDomainError::PasswordRequired => StatusCode::UNAUTHORIZED,
+                    LinkDomainError::WrongPassword => StatusCode::FORBIDDEN,
+
+                    LinkDomainError::InvalidShortCode => StatusCode::NOT_FOUND,
+                    _ => StatusCode::INTERNAL_SERVER_ERROR,
+                };
+
+                (status, json!({ "error": link_err.to_string() }))
             }
         };
 

@@ -38,9 +38,11 @@ impl GetLinkInteractor {
 impl GetLinkUseCase for GetLinkInteractor {
     async fn execute(
         &self,
-        short_code: ShortCode,
+        short_code: String,
         req: GetLinkRequest,
     ) -> Result<OriginalLink, AppError> {
+        let short_code = ShortCode::new(short_code)?;
+
         let link = self.link_repo.find_by_short_code(&short_code).await?;
 
         // TODO: Get current clicks count when analytics is implemented
