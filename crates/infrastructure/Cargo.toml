@@ -6,17 +6,17 @@ license.workspace = true
 version.workspace = true
 
 [dependencies]
-business ={ path = "../business" }
+business = { path = "../business" }
 
-async-trait = "0.1.89"
-zxcvbn = "3.1.0"
 argon2 = "0.5.3"
-password-hash = { version = "0.5.0", features = ["getrandom"] }
-jsonwebtoken = { version = "10.3.0", features = ["rust_crypto"] }
-chrono = "0.4.43"
-serde = { version = "1.0.228", features = ["derive"] }
-rand = "0.9.2"
+async-trait = "0.1.89"
 base64 = "0.22.1"
-sqlx = { version = "0.8.6", features = ["chrono", "postgres", "runtime-tokio", "uuid"] }
-sha2 = "0.10.9"
+chrono = "0.4.43"
 hex = "0.4.3"
+jsonwebtoken = { version = "10.3.0", features = ["rust_crypto"] }
+password-hash = { version = "0.5.0", features = ["getrandom"] }
+rand = "0.9.2"
+serde = { version = "1.0.228", features = ["derive"] }
+sha2 = "0.10.9"
+sqlx = { version = "0.8.6", features = ["chrono", "postgres", "runtime-tokio", "uuid"] }
+zxcvbn = "3.1.0"
