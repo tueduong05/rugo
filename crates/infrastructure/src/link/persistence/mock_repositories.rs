@@ -3,9 +3,12 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use business::domain::link::{
-    entities::Link, error::LinkDomainError, repositories::LinkRepository,
-    value_objects::short_code::ShortCode,
+use business::domain::{
+    link::{
+        entities::Link, error::LinkDomainError, repositories::LinkRepository,
+        value_objects::short_code::ShortCode,
+    },
+    user::value_objects::user_id::UserId,
 };
 
 pub struct MockLinkRepository {
@@ -34,5 +37,17 @@ impl LinkRepository for MockLinkRepository {
             .get(&short_code.to_string())
             .cloned()
             .ok_or(LinkDomainError::InvalidShortCode)
+    }
+
+    async fn find_by_user_id(&self, user_id: &UserId) -> Result<Vec<Link>, LinkDomainError> {
+        let links = self.links.lock().unwrap();
+
+        let user_links: Vec<Link> = links
+            .values()
+            .filter(|link| link.user_id.as_ref() == Some(user_id))
+            .cloned()
+            .collect();
+
+        Ok(user_links)
     }
 }

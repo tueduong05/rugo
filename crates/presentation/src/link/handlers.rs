@@ -8,6 +8,7 @@ use business::application::{
     error::AppError,
     link::use_cases::{
         get_link::request::GetLinkRequest,
+        get_user_links::response::GetUserLinksResponse,
         post_link::dtos::{PostLinkRequest, PostLinkResponse},
     },
 };
@@ -38,4 +39,12 @@ pub async fn get_link_handler(
         .execute(short_code, params)
         .await?;
     Ok(Redirect::temporary(&original_link.to_string()).into_response())
+}
+
+pub async fn get_user_links_handler(
+    State(state): State<LinkState>,
+    AuthenticatedUser(user_id): AuthenticatedUser,
+) -> Result<Json<GetUserLinksResponse>, HttpError> {
+    let response = state.get_user_links_interactor.execute(user_id).await?;
+    Ok(Json(response))
 }

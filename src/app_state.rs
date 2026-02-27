@@ -3,7 +3,9 @@ use std::sync::Arc;
 use business::{
     application::{
         link::use_cases::{
-            get_link::interactor::GetLinkInteractor, post_link::interactor::PostLinkInteractor,
+            get_link::interactor::GetLinkInteractor,
+            get_user_links::interactor::GetUserLinksInteractor,
+            post_link::interactor::PostLinkInteractor,
         },
         user::use_cases::{
             get_me::interactor::GetMeInteractor, login::interactor::LoginInteractor,
@@ -16,7 +18,7 @@ use business::{
 use infrastructure::{
     link::{
         persistence::mock_repositories::MockLinkRepository,
-        services::mock_short_code_services::MockShortCodeGenerator,
+        services::short_code_services::RandomShortCodeGenerator,
     },
     user::{
         persistence::{
@@ -52,7 +54,7 @@ pub async fn bootstrap(pool: PgPool) -> AppStates {
         3600,
     ));
 
-    let short_code_generator: Arc<dyn ShortCodeGenerator> = Arc::new(MockShortCodeGenerator);
+    let short_code_generator: Arc<dyn ShortCodeGenerator> = Arc::new(RandomShortCodeGenerator);
 
     let user_state = UserState {
         session_service: session_service.clone(),
@@ -81,7 +83,8 @@ pub async fn bootstrap(pool: PgPool) -> AppStates {
             short_code_generator,
             password_hasher.clone(),
         )),
-        get_link_interactor: Arc::new(GetLinkInteractor::new(link_repo, password_hasher)),
+        get_link_interactor: Arc::new(GetLinkInteractor::new(link_repo.clone(), password_hasher)),
+        get_user_links_interactor: Arc::new(GetUserLinksInteractor::new(link_repo)),
     };
 
     AppStates {
