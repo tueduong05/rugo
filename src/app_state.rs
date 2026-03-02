@@ -16,6 +16,7 @@ use business::{
     domain::link::services::short_code_services::ShortCodeGenerator,
 };
 use infrastructure::{
+    common::security::password_services::{Argon2idHasher, ZxcvbnPolicy},
     link::{
         persistence::postgres_link_repository::PostgresLinkRepository,
         services::short_code_services::RandomShortCodeGenerator,
@@ -25,10 +26,7 @@ use infrastructure::{
             postgres_session_repository::PostgresSessionRepository,
             postgres_user_repository::PostgresUserRepository,
         },
-        security::{
-            jwt_service::JwtService,
-            password_services::{Argon2idHasher, ZxcvbnPolicy},
-        },
+        security::jwt_service::JwtService,
     },
 };
 use presentation::{link::LinkState, user::UserState};

@@ -25,6 +25,7 @@ pub struct PostLinkRequest {
     pub expires_at: Option<DateTime<Utc>>,
 
     #[serde(default)]
+    #[validate(length(min = 3, message = "Password must be at least 3 characters"))]
     pub password: Option<String>,
 
     #[serde(default)]
