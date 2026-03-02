@@ -71,7 +71,9 @@ impl LinkRepository for PostgresLinkRepository {
         .fetch_optional(&self.pool)
         .await
         .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?
-        .ok_or(LinkDomainError::InvalidShortCode)?;
+        .ok_or(LinkDomainError::from(BaseDomainError::ResourceNotFound(
+            "Short code".into(),
+        )))?;
 
         record.try_into_domain()
     }
@@ -85,6 +87,10 @@ impl LinkRepository for PostgresLinkRepository {
         .fetch_all(&self.pool)
         .await
         .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
+
+        if records.is_empty() {
+            return Ok(vec![]);
+        }
 
         records
             .into_iter()

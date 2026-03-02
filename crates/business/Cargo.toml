@@ -13,5 +13,9 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_trim = "1.1.0"
 thiserror = "2.0.18"
 url = "2.5.8"
+utoipa = { version = "5.4.0", optional = true, features = ["chrono"] }
 uuid = { version = "1.20.0", features = ["serde", "v7"] }
 validator = { version = "0.20.0", features = ["derive"] }
+
+[features]
+openapi = ["dep:utoipa"]

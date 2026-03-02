@@ -1,6 +1,7 @@
 use crate::domain::{link::error::LinkDomainError, user::error::UserDomainError};
 
 #[derive(Debug)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct ValidationErrorDetail {
     pub field: String,
     pub message: String,
@@ -8,6 +9,7 @@ pub struct ValidationErrorDetail {
 }
 
 #[derive(Debug, Default, thiserror::Error)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[error("{details:?}")]
 pub struct ValidationErrors {
     pub details: Vec<ValidationErrorDetail>,
@@ -30,6 +32,7 @@ impl ValidationErrors {
 }
 
 #[derive(Debug, thiserror::Error)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub enum AppError {
     #[error(transparent)]
     Validation(ValidationErrors),

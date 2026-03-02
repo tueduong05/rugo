@@ -1,6 +1,7 @@
 use crate::domain::common::error::BaseDomainError;
 
 #[derive(Debug, thiserror::Error)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub enum LinkDomainError {
     #[error(transparent)]
     Base(#[from] BaseDomainError),
@@ -14,8 +15,6 @@ pub enum LinkDomainError {
     InvalidLink,
 
     // Get Link Errors
-    #[error("Invalid short code")]
-    InvalidShortCode,
     #[error("Link expired")]
     LinkExpired,
     #[error("Link click limit reached")]

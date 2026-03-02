@@ -109,9 +109,17 @@ impl SessionService for JwtService {
             .map_err(|_| UserDomainError::InvalidSession)?;
 
         if !session.is_valid(Utc::now()) {
-            if session.is_used && !session.is_revoked {
-                let _ = self.repo.revoke_all(&session.user_id).await;
+            if session.is_used {
+                if !session.is_revoked {
+                    let _ = self.repo.revoke_all(&session.user_id).await;
+                }
+                return Err(UserDomainError::SessionAlreadyUsed.into());
             }
+
+            if session.expires_at < Utc::now() {
+                return Err(UserDomainError::SessionExpired.into());
+            }
+
             return Err(UserDomainError::InvalidSession.into());
         }
 
@@ -121,7 +129,7 @@ impl SessionService for JwtService {
         self.repo
             .save(session.clone(), Some(old_version))
             .await
-            .map_err(|_| UserDomainError::ConcurrencyError)?;
+            .map_err(|_| UserDomainError::from(BaseDomainError::ConcurrencyError))?;
 
         self.start_session(&session.user_id).await
     }

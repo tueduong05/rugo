@@ -7,8 +7,11 @@ use crate::{
             common::user_profile_response::UserProfileResponse, use_cases::get_me::GetMeUseCase,
         },
     },
-    domain::user::{
-        error::UserDomainError, repositories::UserRepository, value_objects::user_id::UserId,
+    domain::{
+        common::error::BaseDomainError,
+        user::{
+            error::UserDomainError, repositories::UserRepository, value_objects::user_id::UserId,
+        },
     },
 };
 
@@ -29,7 +32,9 @@ impl GetMeUseCase for GetMeInteractor {
             .user_repo
             .find_by_user_id(&user_id)
             .await?
-            .ok_or(UserDomainError::UserNotFound)?;
+            .ok_or(UserDomainError::from(BaseDomainError::ResourceNotFound(
+                "User".into(),
+            )))?;
 
         Ok(UserProfileResponse::from(user))
     }

@@ -16,6 +16,16 @@ use validator::Validate;
 
 use crate::{common::middleware::AuthenticatedUser, error::HttpError, link::LinkState};
 
+#[utoipa::path(
+    post,
+    path = "/api/v1/links",
+    request_body = PostLinkRequest,
+    responses(
+        (status = 201, description = "Shortened link created", body = PostLinkResponse),
+    ),
+    tag = "Links",
+    security((), ("bearer_auth" = []))
+)]
 pub async fn post_link_handler(
     State(state): State<LinkState>,
     user: Result<AuthenticatedUser, HttpError>,
@@ -29,6 +39,18 @@ pub async fn post_link_handler(
     Ok((StatusCode::CREATED, Json(response)))
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/v1/links/{short_code}",
+    responses(
+        (status = 307, description = "Redirecting to orignal link"),
+    ),
+    params(
+        ("short_code" = String, Path, description = "The unique short slug"),
+        ("password" = Option<String>, Query, description = "Link password")
+    ),
+    tag = "Links",
+)]
 pub async fn get_link_handler(
     State(state): State<LinkState>,
     Path(short_code): Path<String>,
@@ -41,6 +63,15 @@ pub async fn get_link_handler(
     Ok(Redirect::temporary(&original_link.to_string()).into_response())
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/v1/links/me",
+    responses(
+        (status = 200, description = "Successfully retrieved user links", body = GetUserLinksResponse),
+    ),
+    tag = "Links",
+    security(("bearer_auth" = []))
+)]
 pub async fn get_user_links_handler(
     State(state): State<LinkState>,
     AuthenticatedUser(user_id): AuthenticatedUser,

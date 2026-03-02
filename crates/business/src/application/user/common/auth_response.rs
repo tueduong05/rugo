@@ -3,6 +3,7 @@ use serde::Serialize;
 use crate::application::user::common::user_profile_response::UserProfileResponse;
 
 #[derive(Serialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct AuthResponse {
     pub user_profile: UserProfileResponse,
     pub access_token: String,

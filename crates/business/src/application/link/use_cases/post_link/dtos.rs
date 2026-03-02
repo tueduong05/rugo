@@ -6,6 +6,7 @@ use validator::Validate;
 use crate::domain::link::value_objects::short_code::SHORTCODE_REGEX;
 
 #[derive(Deserialize, Validate)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct PostLinkRequest {
     #[serde(deserialize_with = "string_trim")]
     #[validate(
@@ -40,6 +41,7 @@ fn default_is_active() -> bool {
 }
 
 #[derive(Serialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct PostLinkResponse {
     pub id: u64,
     pub original_link: String,

@@ -1,15 +1,10 @@
 use crate::domain::common::error::BaseDomainError;
 
 #[derive(Debug, thiserror::Error)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub enum UserDomainError {
     #[error(transparent)]
     Base(#[from] BaseDomainError),
-
-    // Resource Errors
-    #[error("User not found")]
-    UserNotFound,
-    #[error("Concurrency error")]
-    ConcurrencyError,
 
     // Register Errors
     #[error("Username is taken")]
@@ -34,6 +29,8 @@ pub enum UserDomainError {
     AccessDenied,
     #[error("Invalid session")]
     InvalidSession,
+    #[error("Session already used")]
+    SessionAlreadyUsed,
     #[error("Session expired")]
     SessionExpired,
     #[error("Session revoked")]

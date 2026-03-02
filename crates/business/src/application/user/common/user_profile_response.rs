@@ -4,7 +4,9 @@ use uuid::Uuid;
 use crate::domain::user::entities::User;
 
 #[derive(Serialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct UserProfileResponse {
+    #[cfg_attr(feature = "openapi", schema(value_type = String, format = "uuid"))]
     pub id: Uuid,
     pub username: String,
     pub email: String,

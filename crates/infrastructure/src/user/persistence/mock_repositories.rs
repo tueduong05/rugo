@@ -120,7 +120,7 @@ impl SessionRepository for MockSessionRepository {
                     .ok_or(UserDomainError::InvalidSession)?;
 
                 if existing.version != expected {
-                    return Err(UserDomainError::ConcurrencyError);
+                    return Err(UserDomainError::from(BaseDomainError::ConcurrencyError));
                 }
 
                 *existing = session;

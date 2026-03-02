@@ -59,7 +59,12 @@ impl SessionRepository for PostgresSessionRepository {
                 )
                 .execute(&self.pool)
                 .await
-                .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
+                .map_err(|e| match e {
+                    sqlx::Error::Database(db_err) if db_err.is_foreign_key_violation() => {
+                        UserDomainError::from(BaseDomainError::ResourceNotFound("User".into()))
+                    }
+                    _ => BaseDomainError::Infrastructure(e.to_string()).into(),
+                })?;
             }
 
             Some(expected_version) => {
@@ -81,7 +86,7 @@ impl SessionRepository for PostgresSessionRepository {
                 .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
                 if result.rows_affected() == 0 {
-                    return Err(UserDomainError::ConcurrencyError);
+                    return Err(UserDomainError::from(BaseDomainError::ConcurrencyError));
                 }
             }
         }
@@ -111,7 +116,9 @@ impl SessionRepository for PostgresSessionRepository {
         .fetch_optional(&self.pool)
         .await
         .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?
-        .ok_or(UserDomainError::InvalidSession)?;
+        .ok_or(UserDomainError::from(BaseDomainError::ResourceNotFound(
+            "Session".into(),
+        )))?;
 
         record.try_into_domain()
     }
@@ -125,9 +132,7 @@ impl SessionRepository for PostgresSessionRepository {
             SET is_revoked = true 
             WHERE token_hash = $1 
                 AND user_id = $2 
-                AND is_used = false
                 AND is_revoked = false
-                AND expires_at > NOW()
             "#,
             hashed,
             user_id.value()
@@ -137,7 +142,7 @@ impl SessionRepository for PostgresSessionRepository {
         .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
         if result.rows_affected() == 0 {
-            return Err(UserDomainError::InvalidSession);
+            return Err(UserDomainError::SessionRevoked);
         }
 
         Ok(())

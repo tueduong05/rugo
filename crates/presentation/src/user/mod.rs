@@ -8,7 +8,7 @@ use business::application::user::{
     },
 };
 
-mod handlers;
+pub mod handlers;
 pub mod routes;
 
 #[derive(Clone)]

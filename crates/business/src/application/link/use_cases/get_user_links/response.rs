@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 
 #[derive(Serialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct GetUserLinkItem {
     pub original_link: String,
     pub short_code: String,
@@ -14,6 +15,7 @@ pub struct GetUserLinkItem {
 }
 
 #[derive(Serialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct GetUserLinksResponse {
     pub links: Vec<GetUserLinkItem>,
     pub total_count: usize,

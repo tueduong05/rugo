@@ -5,6 +5,7 @@ use validator::Validate;
 use crate::domain::user::value_objects::{email::EMAIL_REGEX, username::USERNAME_REGEX};
 
 #[derive(Deserialize, Validate)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct RegisterRequest {
     #[serde(deserialize_with = "string_trim")]
     #[validate(

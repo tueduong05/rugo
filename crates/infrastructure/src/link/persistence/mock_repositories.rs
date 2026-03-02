@@ -4,6 +4,7 @@ use std::{
 };
 
 use business::domain::{
+    common::error::BaseDomainError,
     link::{
         entities::Link, error::LinkDomainError, repositories::LinkRepository,
         value_objects::short_code::ShortCode,
@@ -36,7 +37,9 @@ impl LinkRepository for MockLinkRepository {
         links
             .get(&short_code.to_string())
             .cloned()
-            .ok_or(LinkDomainError::InvalidShortCode)
+            .ok_or(LinkDomainError::from(BaseDomainError::ResourceNotFound(
+                "Short code".into(),
+            )))
     }
 
     async fn find_by_user_id(&self, user_id: &UserId) -> Result<Vec<Link>, LinkDomainError> {

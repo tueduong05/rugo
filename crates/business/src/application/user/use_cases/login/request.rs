@@ -7,6 +7,7 @@ use validator::{Validate, ValidationError};
 use crate::domain::user::value_objects::{email::EMAIL_REGEX, username::USERNAME_REGEX};
 
 #[derive(Deserialize, Validate)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct LoginRequest {
     #[serde(deserialize_with = "string_trim")]
     #[validate(length(min = 1), custom(function = "validate_identifier"))]
