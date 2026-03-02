@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                    UPDATE refresh_tokens \n                    SET expires_at = $1, is_used = $2, is_revoked = $3, version = $4\n                    WHERE id = $5 AND version = $6\n                    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Bool",
+        "Bool",
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3220f23e0c677302165b8bf0d39ab5da8419132e4d2d8301aa27b3a974702c1b"
+}

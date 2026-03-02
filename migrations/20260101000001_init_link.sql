@@ -1,8 +1,8 @@
-CREATE TABLE links (
+CREATE TABLE IF NOT EXISTS links (
     id BIGSERIAL PRIMARY KEY,
     user_id UUID REFERENCES users(id) ON DELETE SET NULL, 
     original_link TEXT NOT NULL,
-    short_code VARCHAR(255) UNIQUE NOT NULL,
+    short_code VARCHAR(20) UNIQUE NOT NULL,
     is_custom BOOLEAN NOT NULL DEFAULT FALSE,
     expires_at TIMESTAMPTZ,
     hashed_password TEXT,
@@ -12,4 +12,4 @@ CREATE TABLE links (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW() 
 );
 
-CREATE INDEX idx_links_user_id ON links(user_id);
+CREATE INDEX IF NOT EXISTS idx_links_user_id ON links(user_id);

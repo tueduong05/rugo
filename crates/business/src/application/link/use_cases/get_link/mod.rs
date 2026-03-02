@@ -1,6 +1,6 @@
 use crate::{
     application::{error::AppError, link::use_cases::get_link::request::GetLinkRequest},
-    domain::link::value_objects::{original_link::OriginalLink},
+    domain::link::value_objects::original_link::OriginalLink,
 };
 
 pub mod interactor;

@@ -17,7 +17,8 @@ impl Username {
         if value != value.trim() || !(3..=20).contains(&len) || !USERNAME_REGEX.is_match(&value) {
             return Err(BaseDomainError::Unexpected(
                 "Username does not meet domain requirements".into(),
-            ).into());
+            )
+            .into());
         }
 
         Ok(Self(value))

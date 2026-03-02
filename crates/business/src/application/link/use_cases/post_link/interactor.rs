@@ -85,7 +85,7 @@ impl PostLinkUseCase for PostLinkInteractor {
                 req.is_active,
             );
 
-            match self.link_repo.save(&new_link).await {
+            match self.link_repo.create(&new_link).await {
                 Ok(_) => break new_link,
 
                 Err(LinkDomainError::ShortCodeAlreadyExists) if !is_custom => {

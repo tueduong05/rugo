@@ -25,7 +25,7 @@ impl MockLinkRepository {
 
 #[async_trait::async_trait]
 impl LinkRepository for MockLinkRepository {
-    async fn save(&self, link: &Link) -> Result<(), LinkDomainError> {
+    async fn create(&self, link: &Link) -> Result<(), LinkDomainError> {
         let mut links = self.links.lock().unwrap();
         links.insert(link.short_code.to_string(), link.clone());
         Ok(())

@@ -17,7 +17,7 @@ use business::{
 };
 use infrastructure::{
     link::{
-        persistence::mock_repositories::MockLinkRepository,
+        persistence::postgres_link_repository::PostgresLinkRepository,
         services::short_code_services::RandomShortCodeGenerator,
     },
     user::{
@@ -42,7 +42,7 @@ pub struct AppStates {
 pub async fn bootstrap(pool: PgPool) -> AppStates {
     let user_repo = Arc::new(PostgresUserRepository::new(pool.clone()));
     let session_repo = Arc::new(PostgresSessionRepository::new(pool.clone()));
-    let link_repo = Arc::new(MockLinkRepository::new());
+    let link_repo = Arc::new(PostgresLinkRepository::new(pool.clone()));
 
     let password_policy = Arc::new(ZxcvbnPolicy::new(3));
     let password_hasher = Arc::new(Argon2idHasher);

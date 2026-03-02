@@ -18,7 +18,8 @@ impl ShortCode {
         {
             return Err(BaseDomainError::Unexpected(
                 "Short code does not meet domain requirements".into(),
-            ).into());
+            )
+            .into());
         }
 
         Ok(Self(value))

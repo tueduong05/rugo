@@ -1,6 +1,6 @@
 use std::{env, net::SocketAddr};
 
-use infrastructure::user::persistence::db;
+use infrastructure::db;
 use presentation::build_app;
 use tokio::net::TcpListener;
 
@@ -12,6 +12,8 @@ async fn main() {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let pool = db::create_pool(&database_url).await.unwrap();
+
+    db::run_migrations(&pool).await.unwrap();
 
     let states = app_state::bootstrap(pool).await;
 

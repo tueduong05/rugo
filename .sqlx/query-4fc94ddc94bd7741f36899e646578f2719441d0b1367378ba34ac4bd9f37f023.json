@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE refresh_tokens \n            SET is_revoked = true \n            WHERE token_hash = $1 \n                AND user_id = $2 \n                AND is_used = false\n                AND is_revoked = false\n                AND expires_at > NOW()\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bpchar",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4fc94ddc94bd7741f36899e646578f2719441d0b1367378ba34ac4bd9f37f023"
+}
