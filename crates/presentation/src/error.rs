@@ -127,20 +127,35 @@ impl IntoResponse for HttpError {
                         .into_response()
                 }
 
-                UserDomainError::InvalidCredentials
-                | UserDomainError::InvalidSession
+                UserDomainError::InvalidCredentials | UserDomainError::InvalidSession => {
+                    ProblemDetails::new(
+                        StatusCode::UNAUTHORIZED,
+                        "Unauthorized",
+                        "Authentication failed".into(),
+                    )
+                    .as_response()
+                    .into_response()
+                }
+
+                UserDomainError::AccessDenied
                 | UserDomainError::SessionExpired
-                | UserDomainError::SessionRevoked => ProblemDetails::new(
-                    StatusCode::UNAUTHORIZED,
-                    "Unauthorized",
-                    "Authentication failed".into(),
+                | UserDomainError::SessionAlreadyUsed
+                | UserDomainError::SessionRevoked
+                | UserDomainError::EmailNotVerified
+                | UserDomainError::AccountLocked
+                | UserDomainError::AccountDisabled => {
+                    ProblemDetails::new(StatusCode::FORBIDDEN, "Forbidden", user_err.to_string())
+                        .as_response()
+                        .into_response()
+                }
+
+                UserDomainError::PasswordTooWeak => ProblemDetails::new(
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "Unprocessable Entity",
+                    "The password does not meet the complexity requirements.".into(),
                 )
                 .as_response()
                 .into_response(),
-
-                _ => ProblemDetails::new(StatusCode::FORBIDDEN, "Forbidden", user_err.to_string())
-                    .as_response()
-                    .into_response(),
             },
 
             AppError::Link(link_err) => match link_err {
@@ -176,10 +191,24 @@ impl IntoResponse for HttpError {
                 .as_response()
                 .into_response(),
 
-                _ => ProblemDetails::new(
-                    StatusCode::BAD_REQUEST,
-                    "Bad Request",
+                LinkDomainError::LinkClickLimitReached | LinkDomainError::LinkNotActive => {
+                    ProblemDetails::new(StatusCode::FORBIDDEN, "Forbidden", link_err.to_string())
+                        .as_response()
+                        .into_response()
+                }
+
+                LinkDomainError::InvalidLink => ProblemDetails::new(
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "Unprocessable Entity",
                     link_err.to_string(),
+                )
+                .as_response()
+                .into_response(),
+
+                LinkDomainError::ShortCodeCollisionLimitReached => ProblemDetails::new(
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Internal Server Error",
+                    "Could not generate a unique short code".into(),
                 )
                 .as_response()
                 .into_response(),
