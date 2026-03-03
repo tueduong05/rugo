@@ -14,7 +14,11 @@ use business::application::{
 };
 use validator::Validate;
 
-use crate::{common::middleware::AuthenticatedUser, error::HttpError, link::LinkState};
+use crate::{
+    common::middleware::AuthenticatedUser,
+    error::{HttpError, ProblemDetails},
+    link::LinkState,
+};
 
 #[utoipa::path(
     post,
@@ -22,6 +26,10 @@ use crate::{common::middleware::AuthenticatedUser, error::HttpError, link::LinkS
     request_body = PostLinkRequest,
     responses(
         (status = 201, description = "Shortened link created", body = PostLinkResponse),
+        (status = 400, description = "Invalid input data", body = ProblemDetails),
+        (status = 401, description = "Unauthorized", body = ProblemDetails),
+        (status = 409, description = "Short code already exists", body = ProblemDetails),
+        (status = 422, description = "Invalid URL format or link data", body = ProblemDetails)
     ),
     tag = "Links",
     security((), ("bearer_auth" = []))
@@ -43,7 +51,11 @@ pub async fn post_link_handler(
     get,
     path = "/api/v1/links/{short_code}",
     responses(
-        (status = 307, description = "Redirecting to orignal link"),
+        (status = 307, description = "Redirecting to original link"),
+        (status = 401, description = "Password required or incorrect password", body = ProblemDetails),
+        (status = 403, description = "Link is inactive or click limit reached", body = ProblemDetails),
+        (status = 404, description = "Link not found", body = ProblemDetails),
+        (status = 410, description = "Link has expired", body = ProblemDetails)
     ),
     params(
         ("short_code" = String, Path, description = "The unique short slug"),
@@ -68,6 +80,7 @@ pub async fn get_link_handler(
     path = "/api/v1/links/me",
     responses(
         (status = 200, description = "Successfully retrieved user links", body = GetUserLinksResponse),
+        (status = 401, description = "Unauthorized - Missing or invalid token", body = ProblemDetails),
     ),
     tag = "Links",
     security(("bearer_auth" = []))

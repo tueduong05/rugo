@@ -47,7 +47,8 @@ pub async fn register_handler(
     request_body = LoginRequest,
     responses(
         (status = 200, description = "Login successful", body = AuthResponse),
-        (status = 401, description = "Invalid credentials or session", body = ProblemDetails),
+        (status = 400, description = "Invalid input data (Validation failure)", body = ProblemDetails),
+        (status = 401, description = "Invalid credentials", body = ProblemDetails),
         (status = 403, description = "Account locked, disabled, or email not verified", body = ProblemDetails),
     ),
     tag = "Users"
@@ -68,8 +69,8 @@ pub async fn login_handler(
     request_body = RefreshSessionRequest,
     responses(
         (status = 200, description = "Session refreshed", body = RefreshSessionResponse),
-        (status = 400, description = "Invalid request format", body = ProblemDetails),
-        (status = 401, description = "Invalid credentials or session", body = ProblemDetails),
+        (status = 400, description = "Invalid input data (Validation failure)", body = ProblemDetails),
+        (status = 401, description = "Invalid session", body = ProblemDetails),
         (status = 403, description = "Forbidden - Token reuse detected or session revoked", body = ProblemDetails),
     ),
     tag = "Users"
@@ -90,7 +91,7 @@ pub async fn refresh_session_handler(
     request_body = LogoutRequest,
     responses(
         (status = 204, description = "User logged out successfully"),
-        (status = 400, description = "Invalid logout request data", body = ProblemDetails),
+        (status = 400, description = "Invalid request format", body = ProblemDetails),
         (status = 401, description = "Unauthorized - Valid bearer token required", body = ProblemDetails),
         (status = 403, description = "Forbidden - Session is invalid or already revoked", body = ProblemDetails),
     ),
