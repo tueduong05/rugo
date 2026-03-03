@@ -12,7 +12,7 @@ use sqlx::{prelude::FromRow, types::Uuid};
 
 #[derive(FromRow)]
 pub struct LinkRecord {
-    pub id: i64,
+    pub id: Option<i64>,
     pub user_id: Option<Uuid>,
     pub original_link: String,
     pub short_code: String,
@@ -28,7 +28,7 @@ pub struct LinkRecord {
 impl From<&Link> for LinkRecord {
     fn from(link: &Link) -> Self {
         Self {
-            id: link.id as i64,
+            id: link.id.map(|id| id as i64),
             user_id: link.user_id.as_ref().map(|id| id.value()),
             original_link: link.original_link.to_string(),
             short_code: link.short_code.to_string(),
@@ -46,7 +46,7 @@ impl From<&Link> for LinkRecord {
 impl LinkRecord {
     pub fn try_into_domain(self) -> Result<Link, LinkDomainError> {
         Ok(Link {
-            id: self.id as u64,
+            id: self.id.map(|id| id as u64),
             user_id: self.user_id.map(UserId::from),
             original_link: OriginalLink::new(self.original_link)?,
             short_code: ShortCode::new(self.short_code)?,

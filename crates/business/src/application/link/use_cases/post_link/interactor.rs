@@ -101,7 +101,6 @@ impl PostLinkUseCase for PostLinkInteractor {
         };
 
         Ok(PostLinkResponse {
-            id: link.id,
             original_link: link.original_link.to_string(),
             short_code: link.short_code.to_string(),
             expires_at: link.expires_at,

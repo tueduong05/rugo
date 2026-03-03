@@ -37,13 +37,11 @@ impl SessionRepository for PostgresSessionRepository {
 
         match old_version {
             None => {
-                if record.token.is_empty() {
-                    return Err(
-                        BaseDomainError::Infrastructure("Token cannot be empty".into()).into(),
-                    );
-                }
+                let token = record.token.as_ref().ok_or_else(|| {
+                    BaseDomainError::Unexpected("Token missing for new record".into())
+                })?;
 
-                let hashed = self.hash_token(&record.token);
+                let hashed = self.hash_token(token);
 
                 sqlx::query!(
                     r#"

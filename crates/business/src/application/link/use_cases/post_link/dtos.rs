@@ -43,7 +43,6 @@ fn default_is_active() -> bool {
 #[derive(Serialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct PostLinkResponse {
-    pub id: u64,
     pub original_link: String,
     pub short_code: String,
     pub expires_at: Option<DateTime<Utc>>,

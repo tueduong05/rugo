@@ -79,13 +79,13 @@ impl SessionService for JwtService {
             UserDomainError::from(BaseDomainError::Unexpected("Token signing failed".into()))
         })?;
 
-        let refresh_token = self.generate_random_token();
+        let refresh_token_str = self.generate_random_token();
         let expires_at = now + Duration::seconds(self.refresh_token_seconds as i64);
 
         let refresh_token = RefreshToken {
-            id: 0,
+            id: None,
             user_id: *user_id,
-            token: refresh_token,
+            token: Some(refresh_token_str.clone()),
             expires_at,
             is_used: false,
             is_revoked: false,
@@ -97,7 +97,7 @@ impl SessionService for JwtService {
         Ok(Tokens {
             access_token,
             expires_in: self.access_token_seconds,
-            refresh_token: refresh_token.token,
+            refresh_token: refresh_token_str,
         })
     }
 

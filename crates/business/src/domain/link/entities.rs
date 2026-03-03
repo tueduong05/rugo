@@ -11,7 +11,7 @@ use crate::domain::{
 
 #[derive(Clone)]
 pub struct Link {
-    pub id: u64,
+    pub id: Option<u64>,
     pub user_id: Option<UserId>,
     pub original_link: OriginalLink,
     pub short_code: ShortCode,
@@ -36,7 +36,7 @@ impl Link {
         is_active: bool,
     ) -> Self {
         Link {
-            id: 0,
+            id: None,
             user_id,
             original_link,
             short_code,

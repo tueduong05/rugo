@@ -104,19 +104,23 @@ impl SessionRepository for MockSessionRepository {
     ) -> Result<(), UserDomainError> {
         let mut sessions = self.sessions.lock().unwrap();
 
+        let token = session.token.as_ref().ok_or_else(|| {
+            BaseDomainError::Unexpected("RefreshToken must have a token string".into())
+        })?;
+
         match old_version {
             None => {
-                if sessions.contains_key(&session.token) {
+                if sessions.contains_key(token) {
                     return Err(
                         BaseDomainError::Infrastructure("Token already exists".into()).into(),
                     );
                 }
-                sessions.insert(session.token.clone(), session);
+                sessions.insert(token.clone(), session);
             }
 
             Some(expected) => {
                 let existing = sessions
-                    .get_mut(&session.token)
+                    .get_mut(token)
                     .ok_or(UserDomainError::InvalidSession)?;
 
                 if existing.version != expected {

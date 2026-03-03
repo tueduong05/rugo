@@ -39,9 +39,9 @@ impl User {
 
 #[derive(Clone)]
 pub struct RefreshToken {
-    pub id: u64,
+    pub id: Option<u64>,
     pub user_id: UserId,
-    pub token: String,
+    pub token: Option<String>,
     pub expires_at: DateTime<Utc>,
     pub is_used: bool,
     pub is_revoked: bool,
