@@ -13,14 +13,21 @@ use business::application::{
 };
 use validator::Validate;
 
-use crate::{common::middleware::AuthenticatedUser, error::HttpError, user::UserState};
+use crate::{
+    common::middleware::AuthenticatedUser,
+    error::{HttpError, ProblemDetails},
+    user::UserState,
+};
 
 #[utoipa::path(
     post,
     path = "/api/v1/users/register",
     request_body = RegisterRequest,
     responses(
-        (status = 201, description = "User created", body = AuthResponse),
+        (status = 201, description = "User successfully registered", body = AuthResponse),
+        (status = 400, description = "Invalid input data (Validation failure)", body = ProblemDetails),
+        (status = 409, description = "Username or Email already exists", body = ProblemDetails),
+        (status = 422, description = "Password does not meet security requirements", body = ProblemDetails)
     ),
     tag = "Users"
 )]
@@ -39,7 +46,9 @@ pub async fn register_handler(
     path = "/api/v1/users/login",
     request_body = LoginRequest,
     responses(
-        (status = 200, description = "User logged in", body = AuthResponse),
+        (status = 200, description = "Login successful", body = AuthResponse),
+        (status = 401, description = "Invalid credentials or session", body = ProblemDetails),
+        (status = 403, description = "Account locked, disabled, or email not verified", body = ProblemDetails),
     ),
     tag = "Users"
 )]
@@ -59,6 +68,9 @@ pub async fn login_handler(
     request_body = RefreshSessionRequest,
     responses(
         (status = 200, description = "Session refreshed", body = RefreshSessionResponse),
+        (status = 400, description = "Invalid request format", body = ProblemDetails),
+        (status = 401, description = "Invalid credentials or session", body = ProblemDetails),
+        (status = 403, description = "Forbidden - Token reuse detected or session revoked", body = ProblemDetails),
     ),
     tag = "Users"
 )]
@@ -77,7 +89,10 @@ pub async fn refresh_session_handler(
     path = "/api/v1/users/logout",
     request_body = LogoutRequest,
     responses(
-        (status = 204, description = "User logged out"),
+        (status = 204, description = "User logged out successfully"),
+        (status = 400, description = "Invalid logout request data", body = ProblemDetails),
+        (status = 401, description = "Unauthorized - Valid bearer token required", body = ProblemDetails),
+        (status = 403, description = "Forbidden - Session is invalid or already revoked", body = ProblemDetails),
     ),
     tag = "Users",
     security(
@@ -99,7 +114,9 @@ pub async fn logout_handler(
     get,
     path = "/api/v1/users/me",
     responses(
-        (status = 200, description = "User found", body = UserProfileResponse),
+        (status = 200, description = "Current user profile retrieved", body = UserProfileResponse),
+        (status = 401, description = "Unauthorized - Invalid token or user no longer exists", body = ProblemDetails),
+        (status = 403, description = "Forbidden - Account locked, disabled, or email not verified", body = ProblemDetails),
     ),
     tag = "Users",
     security(
