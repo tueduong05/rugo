@@ -1,13 +1,14 @@
 use axum::{
     Json,
     extract::{Path, Query, State},
-    http::StatusCode,
+    http::{HeaderMap, StatusCode, header},
     response::{IntoResponse, Redirect, Response},
 };
+use axum_client_ip::ClientIp;
 use business::application::{
     error::AppError,
     link::use_cases::{
-        get_link::request::GetLinkRequest,
+        get_link::dtos::{GetLinkCommand, GetLinkRequest},
         get_user_links::response::GetUserLinksResponse,
         post_link::dtos::{PostLinkRequest, PostLinkResponse},
     },
@@ -66,12 +67,29 @@ pub async fn post_link_handler(
 pub async fn get_link_handler(
     State(state): State<LinkState>,
     Path(short_code): Path<String>,
+    headers: HeaderMap,
+    ClientIp(ip): ClientIp,
     Query(params): Query<GetLinkRequest>,
 ) -> Result<Response, HttpError> {
-    let original_link = state
-        .get_link_interactor
-        .execute(short_code, params)
-        .await?;
+    let referrer = headers
+        .get(header::REFERER)
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.to_string());
+
+    let user_agent = headers
+        .get(header::USER_AGENT)
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.to_string());
+
+    let command = GetLinkCommand {
+        short_code,
+        password: params.password,
+        referrer,
+        user_agent,
+        ip,
+    };
+
+    let original_link = state.get_link_interactor.execute(command).await?;
     Ok(Redirect::temporary(&original_link.to_string()).into_response())
 }
 

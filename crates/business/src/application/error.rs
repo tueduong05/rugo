@@ -1,4 +1,7 @@
-use crate::domain::{link::error::LinkDomainError, user::error::UserDomainError};
+use crate::domain::{
+    link::error::LinkDomainError, link_analytics::error::AnalyticsDomainError,
+    user::error::UserDomainError,
+};
 
 #[derive(Debug)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
@@ -42,6 +45,9 @@ pub enum AppError {
 
     #[error(transparent)]
     Link(#[from] LinkDomainError),
+
+    #[error(transparent)]
+    Analytics(#[from] AnalyticsDomainError),
 }
 
 impl From<validator::ValidationErrors> for AppError {

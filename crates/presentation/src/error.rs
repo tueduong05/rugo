@@ -6,7 +6,7 @@ use axum::{
 use business::{
     application::error::AppError,
     domain::{
-        common::error::BaseDomainError, link::error::LinkDomainError, user::error::UserDomainError,
+        common::error::BaseDomainError, link::error::LinkDomainError, link_analytics::error::AnalyticsDomainError, user::error::UserDomainError
     },
 };
 use serde::Serialize;
@@ -213,6 +213,10 @@ impl IntoResponse for HttpError {
                 .as_response()
                 .into_response(),
             },
+
+            AppError::Analytics(analytics_err) => match analytics_err {
+                AnalyticsDomainError::Base(base) => map_base_error(base).into_response()
+            }
         }
     }
 }
