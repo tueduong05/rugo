@@ -23,35 +23,39 @@ Rugo is a personal portfolio project designed to demonstrate the implementation 
 
 ### 👤 Users & Authentication
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| **POST** | `/api/v1/users/register` | Register a new account. |
-| **POST** | `/api/v1/users/login` | Authenticate and receive access/refresh tokens. |
-| **POST** | `/api/v1/users/refresh` | Rotate tokens using a valid refresh session. |
-| **GET** | `/api/v1/users/me` | Fetch current user profile. |
-| **POST** | `/api/v1/users/logout` | Revoke the current session. |
+| Method   | Endpoint                 | Description                                     |
+| :------- | :----------------------- | :---------------------------------------------- |
+| **POST** | `/api/v1/users/register` | Register a new account.                         |
+| **POST** | `/api/v1/users/login`    | Authenticate and receive access/refresh tokens. |
+| **POST** | `/api/v1/users/refresh`  | Rotate tokens using a valid refresh session.    |
+| **GET**  | `/api/v1/users/me`       | Fetch current user profile.                     |
+| **POST** | `/api/v1/users/logout`   | Revoke the current session.                     |
 
 ### 🔗 Link Management
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| **POST** | `/api/v1/links` | Create a shortened link with optional password/limits. |
-| **GET** | `/api/v1/links/me` | List all links created by the current user. |
-| **GET** | `/api/v1/links/{id}/analytics` | Get click stats for a specific link. |
+| Method   | Endpoint                       | Description                                            |
+| :------- | :----------------------------- | :----------------------------------------------------- |
+| **POST** | `/api/v1/links`                | Create a shortened link with optional password/limits. |
+| **GET**  | `/api/v1/links/me`             | List all links created by the current user.            |
+| **GET**  | `/api/v1/links/{id}/analytics` | Get click stats for a specific link.                   |
 
 ### 🚀 Redirection Logic
 
-| Method | Endpoint | Behavior |
-| :--- | :--- | :--- |
-| **GET** | `/{short_code}` | Direct entry point for redirection. |
-| **GET** | `/api/v1/links/{short_code}` | API entry point for redirection. |
+| Method  | Endpoint                     | Behavior                            |
+| :------ | :--------------------------- | :---------------------------------- |
+| **GET** | `/{short_code}`              | Direct entry point for redirection. |
+| **GET** | `/api/v1/links/{short_code}` | API entry point for redirection.    |
 
 #### Redirection Status Codes:
 
 307 Temporary Redirect: Success.
+
 401 Unauthorized: Password required or incorrect.
+
 403 Forbidden: Click limit reached or link manually disabled.
+
 410 Gone: Link has reached its expiration timestamp.
+
 404 Not Found: Short code does not exist.
 
 ## 🚦 Getting Started
