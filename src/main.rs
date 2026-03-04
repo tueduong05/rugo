@@ -17,7 +17,7 @@ async fn main() {
 
     let states = app_state::bootstrap(pool).await;
 
-    let app = build_app(states.user, states.link);
+    let app = build_app(states.user, states.link, states.analytics);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     let listener = TcpListener::bind(addr).await.unwrap();

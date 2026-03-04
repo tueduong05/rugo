@@ -60,7 +60,7 @@ impl JwtService {
 
 #[async_trait::async_trait]
 impl SessionService for JwtService {
-    async fn start_session(&self, user_id: &UserId) -> Result<Tokens, AppError> {
+    async fn start_session(&self, user_id: UserId) -> Result<Tokens, AppError> {
         let now = Utc::now();
         let access_expiry = now + Duration::seconds(self.access_token_seconds as i64);
 
@@ -84,7 +84,7 @@ impl SessionService for JwtService {
 
         let refresh_token = RefreshToken {
             id: None,
-            user_id: *user_id,
+            user_id,
             token: Some(refresh_token_str.clone()),
             expires_at,
             is_used: false,
@@ -111,7 +111,7 @@ impl SessionService for JwtService {
         if !session.is_valid(Utc::now()) {
             if session.is_used {
                 if !session.is_revoked {
-                    let _ = self.repo.revoke_all(&session.user_id).await;
+                    let _ = self.repo.revoke_all(session.user_id).await;
                 }
                 return Err(UserDomainError::SessionAlreadyUsed.into());
             }
@@ -131,15 +131,15 @@ impl SessionService for JwtService {
             .await
             .map_err(|_| UserDomainError::from(BaseDomainError::ConcurrencyError))?;
 
-        self.start_session(&session.user_id).await
+        self.start_session(session.user_id).await
     }
 
-    async fn end_session(&self, user_id: &UserId, refresh_token: &str) -> Result<(), AppError> {
+    async fn end_session(&self, user_id: UserId, refresh_token: &str) -> Result<(), AppError> {
         self.repo.revoke(user_id, refresh_token).await?;
         Ok(())
     }
 
-    async fn end_all_sessions(&self, user_id: &UserId) -> Result<(), AppError> {
+    async fn end_all_sessions(&self, user_id: UserId) -> Result<(), AppError> {
         self.repo.revoke_all(user_id).await?;
         Ok(())
     }

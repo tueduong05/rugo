@@ -30,11 +30,11 @@ impl GetMeUseCase for GetMeInteractor {
     async fn execute(&self, user_id: UserId) -> Result<UserProfileResponse, AppError> {
         let user = self
             .user_repo
-            .find_by_user_id(&user_id)
+            .find_by_user_id(user_id)
             .await?
-            .ok_or(UserDomainError::from(BaseDomainError::ResourceNotFound(
-                "User".into(),
-            )))?;
+            .ok_or_else(|| {
+                UserDomainError::from(BaseDomainError::ResourceNotFound("User".into()))
+            })?;
 
         Ok(UserProfileResponse::from(user))
     }

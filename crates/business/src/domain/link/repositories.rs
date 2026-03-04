@@ -7,7 +7,12 @@ use crate::domain::{
 pub trait LinkRepository: Send + Sync {
     async fn create(&self, link: &Link) -> Result<(), LinkDomainError>;
 
-    async fn find_by_short_code(&self, short_code: &ShortCode) -> Result<Link, LinkDomainError>;
+    async fn find_by_id(&self, id: u64) -> Result<Option<Link>, LinkDomainError>;
 
-    async fn find_by_user_id(&self, user_id: &UserId) -> Result<Vec<Link>, LinkDomainError>;
+    async fn find_by_short_code(
+        &self,
+        short_code: &ShortCode,
+    ) -> Result<Option<Link>, LinkDomainError>;
+
+    async fn find_by_user_id(&self, user_id: UserId) -> Result<Vec<Link>, LinkDomainError>;
 }

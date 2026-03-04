@@ -60,7 +60,19 @@ impl LinkRepository for PostgresLinkRepository {
         Ok(())
     }
 
-    async fn find_by_short_code(&self, short_code: &ShortCode) -> Result<Link, LinkDomainError> {
+    async fn find_by_id(&self, id: u64) -> Result<Option<Link>, LinkDomainError> {
+        let record = sqlx::query_as!(LinkRecord, "SELECT * FROM links WHERE id = $1", id as i64)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
+
+        record.map(|r| r.try_into_domain()).transpose()
+    }
+
+    async fn find_by_short_code(
+        &self,
+        short_code: &ShortCode,
+    ) -> Result<Option<Link>, LinkDomainError> {
         let code_str = short_code.to_string();
 
         let record = sqlx::query_as!(
@@ -70,15 +82,12 @@ impl LinkRepository for PostgresLinkRepository {
         )
         .fetch_optional(&self.pool)
         .await
-        .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?
-        .ok_or(LinkDomainError::from(BaseDomainError::ResourceNotFound(
-            "Short code".into(),
-        )))?;
+        .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
-        record.try_into_domain()
+        record.map(|r| r.try_into_domain()).transpose()
     }
 
-    async fn find_by_user_id(&self, user_id: &UserId) -> Result<Vec<Link>, LinkDomainError> {
+    async fn find_by_user_id(&self, user_id: UserId) -> Result<Vec<Link>, LinkDomainError> {
         let records = sqlx::query_as!(
             LinkRecord,
             "SELECT * FROM links WHERE user_id = $1",

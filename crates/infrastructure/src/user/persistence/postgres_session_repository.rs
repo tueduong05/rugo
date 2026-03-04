@@ -114,14 +114,14 @@ impl SessionRepository for PostgresSessionRepository {
         .fetch_optional(&self.pool)
         .await
         .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?
-        .ok_or(UserDomainError::from(BaseDomainError::ResourceNotFound(
-            "Session".into(),
-        )))?;
+        .ok_or_else(|| {
+            UserDomainError::from(BaseDomainError::ResourceNotFound("Session".into()))
+        })?;
 
         record.try_into_domain()
     }
 
-    async fn revoke(&self, user_id: &UserId, token: &str) -> Result<(), UserDomainError> {
+    async fn revoke(&self, user_id: UserId, token: &str) -> Result<(), UserDomainError> {
         let hashed = self.hash_token(token);
 
         let result = sqlx::query!(
@@ -146,7 +146,7 @@ impl SessionRepository for PostgresSessionRepository {
         Ok(())
     }
 
-    async fn revoke_all(&self, user_id: &UserId) -> Result<(), UserDomainError> {
+    async fn revoke_all(&self, user_id: UserId) -> Result<(), UserDomainError> {
         sqlx::query!(
             r#"
             UPDATE refresh_tokens

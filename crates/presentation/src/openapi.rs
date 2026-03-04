@@ -1,6 +1,7 @@
 use crate::link::handlers::*;
+use crate::link_analytics::handlers::*;
 use crate::user::handlers::*;
-use business::application::{link, user};
+use business::application::{link, link_analytics, user};
 use utoipa::{
     Modify, OpenApi,
     openapi::{
@@ -21,7 +22,8 @@ use crate::error;
         get_me_handler,
         post_link_handler,
         get_link_handler,
-        get_user_links_handler
+        get_user_links_handler,
+        get_link_stats_handler
     ),
     components(
         schemas(
@@ -35,6 +37,7 @@ use crate::error;
             link::use_cases::get_user_links::response::GetUserLinksResponse,
             link::use_cases::post_link::dtos::PostLinkRequest,
             link::use_cases::post_link::dtos::PostLinkResponse,
+            link_analytics::use_cases::get_link_stats::response::GetLinkStatsResponse,
             error::ProblemDetails
         )
     ),
@@ -58,7 +61,6 @@ impl Modify for SecurityAddon {
                 HttpBuilder::new()
                     .scheme(HttpAuthScheme::Bearer)
                     .bearer_format("JWT")
-                    .description(Some("Bearer {token}"))
                     .build(),
             ),
         );

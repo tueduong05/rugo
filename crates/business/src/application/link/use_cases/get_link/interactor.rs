@@ -45,7 +45,13 @@ impl GetLinkUseCase for GetLinkInteractor {
     async fn execute(&self, cmd: GetLinkCommand) -> Result<OriginalLink, AppError> {
         let short_code = ShortCode::new(cmd.short_code)?;
 
-        let link = self.link_repo.find_by_short_code(&short_code).await?;
+        let link = self
+            .link_repo
+            .find_by_short_code(&short_code)
+            .await?
+            .ok_or_else(|| {
+                LinkDomainError::from(BaseDomainError::ResourceNotFound("Link".into()))
+            })?;
 
         // TODO: Get current clicks count when analytics is implemented
         link.is_valid(Utc::now(), 0)?;

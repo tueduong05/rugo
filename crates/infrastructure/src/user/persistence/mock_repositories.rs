@@ -70,13 +70,13 @@ impl UserRepository for MockUserRepository {
         Ok(user.cloned())
     }
 
-    async fn find_by_user_id(&self, user_id: &UserId) -> Result<Option<User>, UserDomainError> {
+    async fn find_by_user_id(&self, user_id: UserId) -> Result<Option<User>, UserDomainError> {
         let users = self
             .users
             .lock()
             .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
-        let user = users.get(user_id).cloned();
+        let user = users.get(&user_id).cloned();
 
         Ok(user)
     }
@@ -143,14 +143,14 @@ impl SessionRepository for MockSessionRepository {
             .ok_or(UserDomainError::InvalidSession)
     }
 
-    async fn revoke(&self, user_id: &UserId, token: &str) -> Result<(), UserDomainError> {
+    async fn revoke(&self, user_id: UserId, token: &str) -> Result<(), UserDomainError> {
         let mut sessions = self.sessions.lock().unwrap();
 
         let session = sessions
             .get_mut(token)
             .ok_or(UserDomainError::InvalidSession)?;
 
-        if &session.user_id != user_id {
+        if session.user_id != user_id {
             return Err(UserDomainError::AccessDenied);
         }
 
@@ -159,11 +159,11 @@ impl SessionRepository for MockSessionRepository {
         Ok(())
     }
 
-    async fn revoke_all(&self, user_id: &UserId) -> Result<(), UserDomainError> {
+    async fn revoke_all(&self, user_id: UserId) -> Result<(), UserDomainError> {
         let mut sessions = self.sessions.lock().unwrap();
 
         for session in sessions.values_mut() {
-            if &session.user_id == user_id {
+            if session.user_id == user_id {
                 session.is_revoked = true;
             }
         }

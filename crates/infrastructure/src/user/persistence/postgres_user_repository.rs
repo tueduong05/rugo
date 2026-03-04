@@ -98,7 +98,7 @@ impl UserRepository for PostgresUserRepository {
         Ok(row.map(|r| r.try_into_domain()).transpose()?)
     }
 
-    async fn find_by_user_id(&self, user_id: &UserId) -> Result<Option<User>, UserDomainError> {
+    async fn find_by_user_id(&self, user_id: UserId) -> Result<Option<User>, UserDomainError> {
         let record_opt = sqlx::query_as!(
             UserRecord,
             r#"

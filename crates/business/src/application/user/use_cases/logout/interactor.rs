@@ -25,7 +25,7 @@ impl LogoutInteractor {
 impl LogoutUseCase for LogoutInteractor {
     async fn execute(&self, user_id: UserId, req: LogoutRequest) -> Result<(), AppError> {
         self.session_service
-            .end_session(&user_id, &req.refresh_token)
+            .end_session(user_id, &req.refresh_token)
             .await?;
 
         Ok(())

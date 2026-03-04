@@ -74,7 +74,7 @@ impl RegisterUseCase for RegisterInteractor {
         self.user_repo.save(&user).await?;
 
         // TODO: Potential failure, return error for user to login manually
-        let tokens = self.session_service.start_session(&user.id).await?;
+        let tokens = self.session_service.start_session(user.id).await?;
 
         Ok(AuthResponse {
             user_profile: user.into(),

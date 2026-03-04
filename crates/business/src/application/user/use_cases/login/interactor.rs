@@ -57,7 +57,7 @@ impl LoginUseCase for LoginInteractor {
             return Err(UserDomainError::InvalidCredentials.into());
         }
 
-        let tokens = self.session_service.start_session(&user.id).await?;
+        let tokens = self.session_service.start_session(user.id).await?;
 
         Ok(AuthResponse {
             user_profile: user.into(),

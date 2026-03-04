@@ -4,6 +4,7 @@ use serde::Serialize;
 #[derive(Serialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct GetUserLinkItem {
+    pub id: u64,
     pub original_link: String,
     pub short_code: String,
     pub is_custom: bool,

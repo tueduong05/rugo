@@ -28,7 +28,7 @@ where
             .and_then(|h| h.to_str().ok())
             .filter(|h| h.starts_with("Bearer "))
             .map(|h| &h[7..])
-            .ok_or(AppError::User(UserDomainError::InvalidSession))?;
+            .ok_or_else(|| AppError::from(UserDomainError::InvalidSession))?;
 
         let user_id = session_service.authenticate(auth_header).await?;
 

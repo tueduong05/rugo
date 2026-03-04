@@ -6,7 +6,8 @@ use axum::{
 use business::{
     application::error::AppError,
     domain::{
-        common::error::BaseDomainError, link::error::LinkDomainError, link_analytics::error::AnalyticsDomainError, user::error::UserDomainError
+        common::error::BaseDomainError, link::error::LinkDomainError,
+        link_analytics::error::AnalyticsDomainError, user::error::UserDomainError,
     },
 };
 use serde::Serialize;
@@ -152,7 +153,7 @@ impl IntoResponse for HttpError {
                 UserDomainError::PasswordTooWeak => ProblemDetails::new(
                     StatusCode::UNPROCESSABLE_ENTITY,
                     "Unprocessable Entity",
-                    "The password does not meet the complexity requirements.".into(),
+                    "The password does not meet the complexity requirements".into(),
                 )
                 .as_response()
                 .into_response(),
@@ -176,7 +177,7 @@ impl IntoResponse for HttpError {
                 LinkDomainError::PasswordRequired => ProblemDetails::new(
                     StatusCode::UNAUTHORIZED,
                     "Password Required",
-                    "This link is protected. Please provide a password.".into(),
+                    "This link is protected. Please provide a password".into(),
                 )
                 .with_type("about:blank/password-required")
                 .as_response()
@@ -185,7 +186,7 @@ impl IntoResponse for HttpError {
                 LinkDomainError::WrongPassword => ProblemDetails::new(
                     StatusCode::UNAUTHORIZED,
                     "Unauthorized",
-                    "The password provided is incorrect.".into(),
+                    "The password provided is incorrect".into(),
                 )
                 .with_type("about:blank/invalid-password")
                 .as_response()
@@ -215,8 +216,8 @@ impl IntoResponse for HttpError {
             },
 
             AppError::Analytics(analytics_err) => match analytics_err {
-                AnalyticsDomainError::Base(base) => map_base_error(base).into_response()
-            }
+                AnalyticsDomainError::Base(base) => map_base_error(base).into_response(),
+            },
         }
     }
 }

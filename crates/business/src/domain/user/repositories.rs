@@ -16,7 +16,7 @@ pub trait UserRepository: Send + Sync {
     ) -> Result<Option<User>, UserDomainError>;
 
     // Get me
-    async fn find_by_user_id(&self, user_id: &UserId) -> Result<Option<User>, UserDomainError>;
+    async fn find_by_user_id(&self, user_id: UserId) -> Result<Option<User>, UserDomainError>;
 }
 
 #[async_trait::async_trait]
@@ -29,7 +29,7 @@ pub trait SessionRepository: Send + Sync {
 
     async fn find_by_token(&self, token: &str) -> Result<RefreshToken, UserDomainError>;
 
-    async fn revoke(&self, user_id: &UserId, token: &str) -> Result<(), UserDomainError>;
+    async fn revoke(&self, user_id: UserId, token: &str) -> Result<(), UserDomainError>;
 
-    async fn revoke_all(&self, user_id: &UserId) -> Result<(), UserDomainError>;
+    async fn revoke_all(&self, user_id: UserId) -> Result<(), UserDomainError>;
 }

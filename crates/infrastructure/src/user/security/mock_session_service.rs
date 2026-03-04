@@ -14,7 +14,7 @@ pub struct MockSessionService;
 
 #[async_trait::async_trait]
 impl SessionService for MockSessionService {
-    async fn start_session(&self, _id: &UserId) -> Result<Tokens, AppError> {
+    async fn start_session(&self, _id: UserId) -> Result<Tokens, AppError> {
         Ok(Tokens {
             access_token: "mock_access_token".to_string(),
             expires_in: 900,
@@ -30,11 +30,11 @@ impl SessionService for MockSessionService {
         })
     }
 
-    async fn end_session(&self, _user_id: &UserId, _token: &str) -> Result<(), AppError> {
+    async fn end_session(&self, _user_id: UserId, _token: &str) -> Result<(), AppError> {
         Ok(())
     }
 
-    async fn end_all_sessions(&self, _user_id: &UserId) -> Result<(), AppError> {
+    async fn end_all_sessions(&self, _user_id: UserId) -> Result<(), AppError> {
         Ok(())
     }
 
