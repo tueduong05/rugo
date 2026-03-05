@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO link_analytics (link_id, referrer, user_agent, ua_info, geo, masked_ip, clicked_at)\n            SELECT * FROM UNNEST($1::BIGINT[], $2::TEXT[], $3::TEXT[], $4::JSONB[], $5::JSONB[], $6::TEXT[], $7::TIMESTAMPTZ[])\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8Array",
+        "TextArray",
+        "TextArray",
+        "JsonbArray",
+        "JsonbArray",
+        "TextArray",
+        "TimestamptzArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "341f2de829284d39fe1b9b850e2490527d8c8ab9ec9abde1e991a2dcfba97fd4"
+}

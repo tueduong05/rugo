@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT \n                clicked_at::date as \"date!\", \n                COUNT(*)::bigint as \"count!\"\n            FROM link_analytics\n            WHERE link_id = $1 AND clicked_at >= CURRENT_DATE - ($2 * INTERVAL '1 day')\n            GROUP BY clicked_at::date\n            ORDER BY clicked_at::date ASC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "date!",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 1,
+        "name": "count!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "bb2a59e16f7b09de595d8bd15e8cd7948f5e7cfbc15c7fd86813e43c98d82e6a"
+}

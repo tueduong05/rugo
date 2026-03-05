@@ -24,27 +24,29 @@ pub struct Link {
     pub updated_at: DateTime<Utc>,
 }
 
+pub struct CreateLinkCommand {
+    pub user_id: Option<UserId>,
+    pub original_link: OriginalLink,
+    pub short_code: ShortCode,
+    pub is_custom: bool,
+    pub expires_at: Option<DateTime<Utc>>,
+    pub hashed_password: Option<HashedPassword>,
+    pub max_clicks: Option<u32>,
+    pub is_active: bool,
+}
+
 impl Link {
-    pub fn new(
-        user_id: Option<UserId>,
-        original_link: OriginalLink,
-        short_code: ShortCode,
-        is_custom: bool,
-        expires_at: Option<DateTime<Utc>>,
-        hashed_password: Option<HashedPassword>,
-        max_clicks: Option<u32>,
-        is_active: bool,
-    ) -> Self {
-        Link {
+    pub fn new(cmd: CreateLinkCommand) -> Self {
+        Self {
             id: None,
-            user_id,
-            original_link,
-            short_code,
-            is_custom,
-            expires_at,
-            hashed_password,
-            max_clicks,
-            is_active,
+            user_id: cmd.user_id,
+            original_link: cmd.original_link,
+            short_code: cmd.short_code,
+            is_custom: cmd.is_custom,
+            expires_at: cmd.expires_at,
+            hashed_password: cmd.hashed_password,
+            max_clicks: cmd.max_clicks,
+            is_active: cmd.is_active,
             created_at: Utc::now(),
             updated_at: Utc::now(),
         }
@@ -59,16 +61,12 @@ impl Link {
             return Err(LinkDomainError::LinkNotActive);
         }
 
-        if let Some(expiry) = self.expires_at {
-            if current_time > expiry {
-                return Err(LinkDomainError::LinkExpired);
-            }
+        if self.expires_at.is_some_and(|expiry| current_time > expiry) {
+            return Err(LinkDomainError::LinkExpired);
         }
 
-        if let Some(max) = self.max_clicks {
-            if current_clicks >= max {
-                return Err(LinkDomainError::LinkClickLimitReached);
-            }
+        if self.max_clicks.is_some_and(|max| current_clicks >= max) {
+            return Err(LinkDomainError::LinkClickLimitReached);
         }
 
         Ok(())

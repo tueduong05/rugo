@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COALESCE(geo->>'country_code', 'Unknown') as \"label!\", COUNT(*)::bigint as \"count!\" \n                       FROM link_analytics WHERE link_id = $1 GROUP BY 1 ORDER BY 2 DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "label!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "count!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "c6695ce6f312279e6a03d3a37537cec307a0aab951ec5cf8fbc46fd9b149465a"
+}

@@ -47,7 +47,6 @@ use crate::error;
         (name = "Links", description = "Link management")
     )
 )]
-
 pub struct ApiDoc;
 
 struct SecurityAddon;

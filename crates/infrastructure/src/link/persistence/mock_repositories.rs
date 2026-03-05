@@ -8,6 +8,7 @@ use business::domain::{
     user::value_objects::user_id::UserId,
 };
 
+#[derive(Default)]
 pub struct MockLinkRepository {
     short_codes: Mutex<HashMap<String, Link>>,
     ids: Mutex<HashMap<u64, Link>>,
@@ -48,10 +49,7 @@ impl LinkRepository for MockLinkRepository {
         ids.insert(id, link_to_save.clone());
 
         if let Some(uid) = link_to_save.user_id {
-            user_links
-                .entry(uid)
-                .or_insert_with(Vec::new)
-                .push(link_to_save);
+            user_links.entry(uid).or_default().push(link_to_save);
         }
 
         Ok(())

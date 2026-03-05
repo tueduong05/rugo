@@ -13,7 +13,6 @@ pub struct AnalyticsEvent {
 }
 
 pub struct LinkAnalytics {
-    pub id: Option<u64>,
     pub link_id: u64,
     pub referrer: Option<String>,
     pub user_agent: Option<String>,
@@ -36,7 +35,6 @@ impl LinkAnalytics {
         let masked_ip = Self::mask_ip(ip);
 
         Self {
-            id: None,
             link_id,
             referrer,
             user_agent,

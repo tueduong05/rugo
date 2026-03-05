@@ -14,7 +14,7 @@ use crate::{
             value_objects::hashed_password::HashedPassword,
         },
         link::{
-            entities::Link,
+            entities::{CreateLinkCommand, Link},
             error::LinkDomainError,
             repositories::LinkRepository,
             services::short_code_services::ShortCodeGenerator,
@@ -74,16 +74,16 @@ impl PostLinkUseCase for PostLinkInteractor {
                 }
             };
 
-            let new_link = Link::new(
+            let new_link = Link::new(CreateLinkCommand {
                 user_id,
-                original_link.clone(),
+                original_link: original_link.clone(),
                 short_code,
                 is_custom,
-                req.expires_at,
-                password_hash,
-                req.max_clicks,
-                req.is_active,
-            );
+                expires_at: req.expires_at,
+                hashed_password: password_hash,
+                max_clicks: req.max_clicks,
+                is_active: req.is_active,
+            });
 
             match self.link_repo.create(&new_link).await {
                 Ok(_) => break new_link,

@@ -26,7 +26,7 @@ use infrastructure::{
         services::short_code_services::RandomShortCodeGenerator,
     },
     link_analytics::{
-        persistence::mock_repositories::MockAnalyticsRepository,
+        persistence::postgres_analytics_repository::PostgresAnalyticsRepository,
         services::mock_services::MockAnalyticsQueue,
     },
     user::{
@@ -50,7 +50,7 @@ pub async fn bootstrap(pool: PgPool) -> AppStates {
     let user_repo = Arc::new(PostgresUserRepository::new(pool.clone()));
     let session_repo = Arc::new(PostgresSessionRepository::new(pool.clone()));
     let link_repo = Arc::new(PostgresLinkRepository::new(pool.clone()));
-    let analytics_repo = Arc::new(MockAnalyticsRepository::new());
+    let analytics_repo = Arc::new(PostgresAnalyticsRepository::new(pool.clone()));
 
     let password_policy = Arc::new(ZxcvbnPolicy::new(3));
     let password_hasher = Arc::new(Argon2idHasher);

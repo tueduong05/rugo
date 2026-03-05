@@ -11,6 +11,7 @@ use business::domain::link_analytics::{
 };
 use chrono::{Duration, Utc};
 
+#[derive(Default)]
 pub struct MockAnalyticsRepository {
     pub events: Mutex<Vec<LinkAnalytics>>,
 }

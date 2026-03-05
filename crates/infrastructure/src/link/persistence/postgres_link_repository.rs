@@ -49,10 +49,10 @@ impl LinkRepository for PostgresLinkRepository {
         .execute(&self.pool)
         .await
         .map_err(|e| {
-            if let Some(db_err) = e.as_database_error() {
-                if db_err.code() == Some(Cow::Borrowed("23505")) {
-                    return LinkDomainError::ShortCodeAlreadyExists;
-                }
+            if let Some(db_err) = e.as_database_error()
+                && db_err.code() == Some(Cow::Borrowed("23505"))
+            {
+                return LinkDomainError::ShortCodeAlreadyExists;
             }
             BaseDomainError::Infrastructure(e.to_string()).into()
         })?;

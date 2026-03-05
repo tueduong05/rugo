@@ -101,7 +101,7 @@ impl SessionRepository for PostgresSessionRepository {
             SELECT 
                 id, 
                 user_id, 
-                '' as "token!",
+                NULL as "token: String",
                 expires_at, 
                 is_used, 
                 is_revoked, 
