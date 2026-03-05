@@ -8,6 +8,7 @@ use crate::{
 };
 
 // TODO: Add worker runner
+// TODO: Error variant for internal workers
 
 pub struct AnalyticsBatchWorker<R, G, U> {
     analytics_repo: R,

@@ -5,9 +5,9 @@ use sqlx::prelude::FromRow;
 
 #[derive(Serialize, Deserialize)]
 pub struct UserAgentRecord {
-    pub device: String,
     pub browser: String,
     pub os: String,
+    pub device: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -36,9 +36,9 @@ impl From<&LinkAnalytics> for LinkAnalyticsRecord {
             referrer: analytics.referrer.clone(),
             user_agent: analytics.user_agent.clone(),
             ua_info: UserAgentRecord {
-                device: analytics.ua_info.device.clone(),
                 browser: analytics.ua_info.browser.clone(),
                 os: analytics.ua_info.os.clone(),
+                device: analytics.ua_info.device.clone(),
             },
             geo: GeoDataRecord {
                 country_code: analytics.geo.country_code.clone(),
