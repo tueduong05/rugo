@@ -9,9 +9,8 @@ use crate::{
         },
     },
     domain::{
-        common::error::BaseDomainError,
+        common::{error::BaseDomainError, value_objects::user_id::UserId},
         link::{error::LinkDomainError, repositories::LinkRepository},
-        user::value_objects::user_id::UserId,
     },
 };
 

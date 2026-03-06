@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use business::application::{
+    common::services::session_service::SessionService,
     link_analytics::use_cases::get_link_stats::GetLinkStatsUseCase,
-    user::services::session_service::SessionService,
 };
 
 pub mod handlers;

@@ -4,25 +4,22 @@ use chrono::Utc;
 
 use crate::{
     application::{
-        error::AppError,
         user::{
             common::auth_response::AuthResponse,
-            services::session_service::SessionService,
             use_cases::register::{RegisterUseCase, request::RegisterRequest},
         },
+        {common::services::session_service::SessionService, error::AppError},
     },
     domain::{
         common::{
             services::password_services::{PasswordHasher, PasswordPolicy},
-            value_objects::hashed_password::HashedPassword,
+            value_objects::{hashed_password::HashedPassword, user_id::UserId},
         },
         user::{
             entities::User,
             error::UserDomainError,
             repositories::UserRepository,
-            value_objects::{
-                email::Email, user_id::UserId, user_status::UserStatus, username::Username,
-            },
+            value_objects::{email::Email, user_status::UserStatus, username::Username},
         },
     },
 };

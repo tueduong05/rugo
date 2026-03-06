@@ -1,11 +1,8 @@
 use business::domain::{
-    common::value_objects::hashed_password::HashedPassword,
-    link::{
-        entities::Link,
-        error::LinkDomainError,
-        value_objects::{original_link::OriginalLink, short_code::ShortCode},
+    common::value_objects::{
+        hashed_password::HashedPassword, original_link::OriginalLink, user_id::UserId,
     },
-    user::value_objects::user_id::UserId,
+    link::{entities::Link, error::LinkDomainError, value_objects::short_code::ShortCode},
 };
 use chrono::{DateTime, Utc};
 use sqlx::{prelude::FromRow, types::Uuid};

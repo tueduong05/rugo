@@ -1,6 +1,6 @@
 use crate::{
     application::{error::AppError, user::use_cases::logout::request::LogoutRequest},
-    domain::user::value_objects::user_id::UserId,
+    domain::common::value_objects::user_id::UserId,
 };
 
 pub mod interactor;

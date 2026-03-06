@@ -2,13 +2,10 @@ use std::sync::Arc;
 
 use crate::{
     application::{
-        error::AppError,
-        user::{
-            services::session_service::SessionService,
-            use_cases::logout::{LogoutUseCase, request::LogoutRequest},
-        },
+        user::use_cases::logout::{LogoutUseCase, request::LogoutRequest},
+        {common::services::session_service::SessionService, error::AppError},
     },
-    domain::user::value_objects::user_id::UserId,
+    domain::common::value_objects::user_id::UserId,
 };
 
 pub struct LogoutInteractor {

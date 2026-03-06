@@ -1,14 +1,12 @@
 use std::{collections::HashMap, sync::Mutex};
 
 use business::domain::{
-    common::error::BaseDomainError,
+    common::{error::BaseDomainError, value_objects::user_id::UserId},
     user::{
         entities::{RefreshToken, User},
         error::UserDomainError,
         repositories::{SessionRepository, UserRepository},
-        value_objects::{
-            email::Email, login_identifier::LoginIdentifier, user_id::UserId, username::Username,
-        },
+        value_objects::{email::Email, login_identifier::LoginIdentifier, username::Username},
     },
 };
 
@@ -121,10 +119,10 @@ impl SessionRepository for MockSessionRepository {
             Some(expected) => {
                 let existing = sessions
                     .get_mut(token)
-                    .ok_or(UserDomainError::InvalidSession)?;
+                    .ok_or(BaseDomainError::InvalidSession)?;
 
                 if existing.version != expected {
-                    return Err(UserDomainError::from(BaseDomainError::ConcurrencyError));
+                    return Err(BaseDomainError::ConcurrencyError.into());
                 }
 
                 *existing = session;
@@ -140,7 +138,7 @@ impl SessionRepository for MockSessionRepository {
         sessions
             .get(token)
             .cloned()
-            .ok_or(UserDomainError::InvalidSession)
+            .ok_or(BaseDomainError::InvalidSession.into())
     }
 
     async fn revoke(&self, user_id: UserId, token: &str) -> Result<(), UserDomainError> {
@@ -148,10 +146,10 @@ impl SessionRepository for MockSessionRepository {
 
         let session = sessions
             .get_mut(token)
-            .ok_or(UserDomainError::InvalidSession)?;
+            .ok_or(BaseDomainError::InvalidSession)?;
 
         if session.user_id != user_id {
-            return Err(UserDomainError::AccessDenied);
+            return Err(BaseDomainError::AccessDenied.into());
         }
 
         session.is_revoked = true;

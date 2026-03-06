@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use business::application::user::{
-    services::session_service::SessionService,
-    use_cases::{
+use business::application::{
+    common::services::session_service::SessionService,
+    user::use_cases::{
         get_me::GetMeUseCase, login::LoginUseCase, logout::LogoutUseCase,
         refresh::RefreshSessionUseCase, register::RegisterUseCase,
     },

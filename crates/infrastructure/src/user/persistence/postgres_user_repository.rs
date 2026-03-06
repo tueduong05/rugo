@@ -1,12 +1,10 @@
 use std::borrow::Cow;
 
 use business::domain::{
-    common::error::BaseDomainError,
+    common::{error::BaseDomainError, value_objects::user_id::UserId},
     user::{
-        entities::User,
-        error::UserDomainError,
-        repositories::UserRepository,
-        value_objects::{login_identifier::LoginIdentifier, user_id::UserId},
+        entities::User, error::UserDomainError, repositories::UserRepository,
+        value_objects::login_identifier::LoginIdentifier,
     },
 };
 use sqlx::PgPool;

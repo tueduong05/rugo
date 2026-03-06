@@ -11,16 +11,15 @@ use crate::{
     domain::{
         common::{
             services::password_services::PasswordHasher,
-            value_objects::hashed_password::HashedPassword,
+            value_objects::{hashed_password::HashedPassword, original_link::OriginalLink, user_id::UserId},
         },
         link::{
             entities::{CreateLinkCommand, Link},
             error::LinkDomainError,
             repositories::LinkRepository,
             services::short_code_services::ShortCodeGenerator,
-            value_objects::{original_link::OriginalLink, short_code::ShortCode},
+            value_objects::short_code::ShortCode,
         },
-        user::value_objects::user_id::UserId,
     },
 };
 

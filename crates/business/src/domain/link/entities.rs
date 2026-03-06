@@ -1,12 +1,8 @@
 use chrono::{DateTime, Utc};
 
 use crate::domain::{
-    common::value_objects::hashed_password::HashedPassword,
-    link::{
-        error::LinkDomainError,
-        value_objects::{original_link::OriginalLink, short_code::ShortCode},
-    },
-    user::value_objects::user_id::UserId,
+    common::value_objects::{hashed_password::HashedPassword, original_link::OriginalLink, user_id::UserId},
+    link::{error::LinkDomainError, value_objects::short_code::ShortCode},
 };
 
 #[derive(Clone)]

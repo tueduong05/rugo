@@ -1,7 +1,10 @@
-use crate::domain::user::{
-    entities::{RefreshToken, User},
-    error::UserDomainError,
-    value_objects::{login_identifier::LoginIdentifier, user_id::UserId},
+use crate::domain::{
+    common::value_objects::user_id::UserId,
+    user::{
+        entities::{RefreshToken, User},
+        error::UserDomainError,
+        value_objects::login_identifier::LoginIdentifier,
+    },
 };
 
 #[async_trait::async_trait]

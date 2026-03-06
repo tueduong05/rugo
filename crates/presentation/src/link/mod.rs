@@ -4,7 +4,7 @@ use business::application::{
     link::use_cases::{
         get_link::GetLinkUseCase, get_user_links::GetUserLinksUseCase, post_link::PostLinkUseCase,
     },
-    user::services::session_service::SessionService,
+    common::services::session_service::SessionService,
 };
 
 pub mod handlers;

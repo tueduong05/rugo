@@ -11,28 +11,26 @@ use crate::{
         },
     },
     domain::{
-        common::error::BaseDomainError,
-        link::{error::LinkDomainError, repositories::LinkRepository},
+        common::{services::link_provider::LinkProvider, value_objects::user_id::UserId},
         link_analytics::{
             repositories::AnalyticsRepository,
             value_objects::analytics_dimension::AnalyticsDimension,
         },
-        user::{error::UserDomainError, value_objects::user_id::UserId},
     },
 };
 
 pub struct GetLinkStatsInteractor {
-    link_repo: Arc<dyn LinkRepository>,
+    link_provider: Arc<dyn LinkProvider>,
     analytics_repo: Arc<dyn AnalyticsRepository>,
 }
 
 impl GetLinkStatsInteractor {
     pub fn new(
-        link_repo: Arc<dyn LinkRepository>,
+        link_provider: Arc<dyn LinkProvider>,
         analytics_repo: Arc<dyn AnalyticsRepository>,
     ) -> Self {
         Self {
-            link_repo,
+            link_provider,
             analytics_repo,
         }
     }
@@ -45,13 +43,10 @@ impl GetLinkStatsUseCase for GetLinkStatsInteractor {
         user_id: UserId,
         link_id: u64,
     ) -> Result<GetLinkStatsResponse, AppError> {
-        let link = self.link_repo.find_by_id(link_id).await?.ok_or_else(|| {
-            LinkDomainError::from(BaseDomainError::ResourceNotFound("Link".into()))
-        })?;
-
-        if link.user_id != Some(user_id) {
-            return Err(UserDomainError::AccessDenied.into());
-        }
+        let original_link = self
+            .link_provider
+            .verify_ownership(link_id, user_id)
+            .await?;
 
         let total_clicks = self.analytics_repo.get_total_clicks(link_id).await?;
         let countries = self
@@ -69,7 +64,7 @@ impl GetLinkStatsUseCase for GetLinkStatsInteractor {
         let daily_data = self.analytics_repo.get_daily_clicks(link_id, 30).await?;
 
         Ok(GetLinkStatsResponse {
-            original_link: link.original_link.to_string(),
+            original_link: original_link.to_string(),
             total_clicks,
             countries: StatItemDTO::from_domain_vec(countries),
             browsers: StatItemDTO::from_domain_vec(browsers),

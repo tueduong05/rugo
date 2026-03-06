@@ -2,12 +2,11 @@ use std::sync::Arc;
 
 use crate::{
     application::{
-        error::AppError,
         user::{
             common::auth_response::AuthResponse,
-            services::session_service::SessionService,
             use_cases::login::{LoginUseCase, request::LoginRequest},
         },
+        {common::services::session_service::SessionService, error::AppError},
     },
     domain::{
         common::services::password_services::PasswordHasher,

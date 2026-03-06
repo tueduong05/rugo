@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use axum::{extract::FromRequestParts, http::request::Parts};
 use business::{
-    application::{error::AppError, user::services::session_service::SessionService},
-    domain::user::{error::UserDomainError, value_objects::user_id::UserId},
+    application::{common::services::session_service::SessionService, error::AppError},
+    domain::{common::{error::BaseDomainError, value_objects::user_id::UserId}},
 };
 
 use crate::error::HttpError;
@@ -28,7 +28,7 @@ where
             .and_then(|h| h.to_str().ok())
             .filter(|h| h.starts_with("Bearer "))
             .map(|h| &h[7..])
-            .ok_or_else(|| AppError::from(UserDomainError::InvalidSession))?;
+            .ok_or_else(|| AppError::from(BaseDomainError::InvalidSession))?;
 
         let user_id = session_service.authenticate(auth_header).await?;
 

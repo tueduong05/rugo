@@ -2,7 +2,7 @@ use crate::{
     application::{
         error::AppError, link::use_cases::get_user_links::response::GetUserLinksResponse,
     },
-    domain::user::value_objects::user_id::UserId,
+    domain::common::value_objects::user_id::UserId,
 };
 
 pub mod interactor;

@@ -3,15 +3,12 @@ use std::sync::Arc;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use business::{
     application::{
+        common::services::session_service::{SessionService, Tokens},
         error::AppError,
-        user::services::session_service::{SessionService, Tokens},
     },
     domain::{
-        common::error::BaseDomainError,
-        user::{
-            entities::RefreshToken, error::UserDomainError, repositories::SessionRepository,
-            value_objects::user_id::UserId,
-        },
+        common::{error::BaseDomainError, value_objects::user_id::UserId},
+        user::{entities::RefreshToken, error::UserDomainError, repositories::SessionRepository},
     },
 };
 use chrono::{Duration, Utc};
@@ -106,21 +103,21 @@ impl SessionService for JwtService {
             .repo
             .find_by_token(refresh_token)
             .await
-            .map_err(|_| UserDomainError::InvalidSession)?;
+            .map_err(|_| UserDomainError::from(BaseDomainError::InvalidSession))?;
 
         if !session.is_valid(Utc::now()) {
             if session.is_used {
                 if !session.is_revoked {
                     let _ = self.repo.revoke_all(session.user_id).await;
                 }
-                return Err(UserDomainError::SessionAlreadyUsed.into());
+                return Err(UserDomainError::from(BaseDomainError::SessionAlreadyUsed).into());
             }
 
             if session.expires_at < Utc::now() {
-                return Err(UserDomainError::SessionExpired.into());
+                return Err(UserDomainError::from(BaseDomainError::SessionExpired).into());
             }
 
-            return Err(UserDomainError::InvalidSession.into());
+            return Err(UserDomainError::from(BaseDomainError::InvalidSession).into());
         }
 
         let old_version = session.version;
@@ -151,8 +148,10 @@ impl SessionService for JwtService {
             &Validation::default(),
         )
         .map_err(|e| match e.kind() {
-            jsonwebtoken::errors::ErrorKind::ExpiredSignature => UserDomainError::SessionExpired,
-            _ => UserDomainError::InvalidSession,
+            jsonwebtoken::errors::ErrorKind::ExpiredSignature => {
+                UserDomainError::from(BaseDomainError::SessionExpired)
+            }
+            _ => UserDomainError::from(BaseDomainError::InvalidSession),
         })?;
 
         let user_id = UserId::parse(&token_data.claims.sub).map_err(|_| {

@@ -2,10 +2,7 @@ use std::mem;
 
 use business::{
     application::link_analytics::workers::AnalyticsBatchWorker,
-    domain::link_analytics::{
-        entities::AnalyticsEvent,
-        services::{GeoLookupService, UserAgentParser},
-    },
+    domain::{common::events::analytics_event::AnalyticsEvent, link_analytics::services::{GeoLookupService, UserAgentParser}},
 };
 use tokio::{
     sync::mpsc,

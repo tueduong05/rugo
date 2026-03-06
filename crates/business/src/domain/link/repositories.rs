@@ -1,6 +1,6 @@
 use crate::domain::{
+    common::value_objects::user_id::UserId,
     link::{entities::Link, error::LinkDomainError, value_objects::short_code::ShortCode},
-    user::value_objects::user_id::UserId,
 };
 
 #[async_trait::async_trait]

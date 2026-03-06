@@ -8,10 +8,8 @@ use crate::{
         },
     },
     domain::{
-        common::error::BaseDomainError,
-        user::{
-            error::UserDomainError, repositories::UserRepository, value_objects::user_id::UserId,
-        },
+        common::{error::BaseDomainError, value_objects::user_id::UserId},
+        user::{error::UserDomainError, repositories::UserRepository},
     },
 };
 

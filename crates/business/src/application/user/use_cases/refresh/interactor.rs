@@ -1,14 +1,11 @@
 use std::sync::Arc;
 
 use crate::application::{
-    error::AppError,
-    user::{
-        services::session_service::SessionService,
-        use_cases::refresh::{
-            RefreshSessionUseCase,
-            dtos::{RefreshSessionRequest, RefreshSessionResponse},
-        },
+    user::use_cases::refresh::{
+        RefreshSessionUseCase,
+        dtos::{RefreshSessionRequest, RefreshSessionResponse},
     },
+    {common::services::session_service::SessionService, error::AppError},
 };
 
 pub struct RefreshSessionInteractor {

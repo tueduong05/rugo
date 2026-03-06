@@ -2,10 +2,13 @@ use std::sync::Arc;
 
 use business::{
     application::{
-        link::use_cases::{
-            get_link::interactor::GetLinkInteractor,
-            get_user_links::interactor::GetUserLinksInteractor,
-            post_link::interactor::PostLinkInteractor,
+        link::{
+            services::link_provider_impl::LinkProviderImpl,
+            use_cases::{
+                get_link::interactor::GetLinkInteractor,
+                get_user_links::interactor::GetUserLinksInteractor,
+                post_link::interactor::PostLinkInteractor,
+            },
         },
         link_analytics::{
             use_cases::get_link_stats::interactor::GetLinkStatsInteractor,
@@ -18,8 +21,10 @@ use business::{
         },
     },
     domain::{
+        common::{
+            events::analytics_event::AnalyticsEvent, services::analytics_queue::AnalyticsQueue,
+        },
         link::services::short_code_services::ShortCodeGenerator,
-        link_analytics::{entities::AnalyticsEvent, services::AnalyticsQueue},
     },
 };
 use infrastructure::{
@@ -59,6 +64,8 @@ pub async fn bootstrap(pool: PgPool) -> (AppStates, JoinHandle<()>) {
     let session_repo = Arc::new(PostgresSessionRepository::new(pool.clone()));
     let link_repo = Arc::new(PostgresLinkRepository::new(pool.clone()));
     let analytics_repo = Arc::new(PostgresAnalyticsRepository::new(pool.clone()));
+
+    let link_provider = Arc::new(LinkProviderImpl::new(link_repo.clone()));
 
     let password_policy = Arc::new(ZxcvbnPolicy::new(3));
     let password_hasher = Arc::new(Argon2idHasher);
@@ -121,7 +128,10 @@ pub async fn bootstrap(pool: PgPool) -> (AppStates, JoinHandle<()>) {
 
     let analytics_state = AnalyticsState {
         session_service,
-        get_link_stats_interactor: Arc::new(GetLinkStatsInteractor::new(link_repo, analytics_repo)),
+        get_link_stats_interactor: Arc::new(GetLinkStatsInteractor::new(
+            link_provider,
+            analytics_repo,
+        )),
     };
 
     (

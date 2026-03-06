@@ -5,7 +5,7 @@ use business::domain::{
         entities::Link, error::LinkDomainError, repositories::LinkRepository,
         value_objects::short_code::ShortCode,
     },
-    user::value_objects::user_id::UserId,
+    common::value_objects::user_id::UserId,
 };
 
 #[derive(Default)]

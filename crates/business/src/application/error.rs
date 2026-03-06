@@ -1,6 +1,6 @@
 use crate::domain::{
-    link::error::LinkDomainError, link_analytics::error::AnalyticsDomainError,
-    user::error::UserDomainError,
+    common::error::BaseDomainError, link::error::LinkDomainError,
+    link_analytics::error::AnalyticsDomainError, user::error::UserDomainError,
 };
 
 #[derive(Debug)]
@@ -39,6 +39,9 @@ impl ValidationErrors {
 pub enum AppError {
     #[error(transparent)]
     Validation(ValidationErrors),
+
+    #[error(transparent)]
+    Base(#[from] BaseDomainError),
 
     #[error(transparent)]
     User(#[from] UserDomainError),

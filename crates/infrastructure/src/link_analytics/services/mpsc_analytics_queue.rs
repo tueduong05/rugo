@@ -1,4 +1,6 @@
-use business::domain::link_analytics::{entities::AnalyticsEvent, services::AnalyticsQueue};
+use business::domain::common::{
+    events::analytics_event::AnalyticsEvent, services::analytics_queue::AnalyticsQueue,
+};
 use tokio::sync::mpsc;
 
 pub struct MPSCAnalyticsQueue {

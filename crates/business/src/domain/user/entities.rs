@@ -1,9 +1,9 @@
 use chrono::{DateTime, Utc};
 
 use crate::domain::{
-    common::value_objects::hashed_password::HashedPassword,
+    common::value_objects::{hashed_password::HashedPassword, user_id::UserId},
     user::value_objects::{
-        email::Email, user_id::UserId, user_status::UserStatus, username::Username,
+        email::Email, user_status::UserStatus, username::Username,
     },
 };
 

@@ -1,11 +1,11 @@
 use business::{
     application::{
+        common::services::session_service::{SessionService, Tokens},
         error::AppError,
-        user::services::session_service::{SessionService, Tokens},
     },
     domain::{
-        common::error::BaseDomainError,
-        user::{error::UserDomainError, value_objects::user_id::UserId},
+        common::{error::BaseDomainError, value_objects::user_id::UserId},
+        user::error::UserDomainError,
     },
 };
 use sqlx::types::Uuid;
@@ -51,8 +51,10 @@ impl SessionService for MockSessionService {
                 Ok(UserId::from(uuid))
             }
 
-            "mock_expired_access_token" => Err(UserDomainError::SessionExpired.into()),
-            _ => Err(UserDomainError::InvalidSession.into()),
+            "mock_expired_access_token" => {
+                Err(UserDomainError::from(BaseDomainError::SessionExpired).into())
+            }
+            _ => Err(UserDomainError::from(BaseDomainError::InvalidSession).into()),
         }
     }
 }

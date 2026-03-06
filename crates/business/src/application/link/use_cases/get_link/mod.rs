@@ -1,6 +1,6 @@
 use crate::{
     application::{error::AppError, link::use_cases::get_link::dtos::GetLinkCommand},
-    domain::link::value_objects::original_link::OriginalLink,
+    domain::common::value_objects::original_link::OriginalLink,
 };
 
 pub mod dtos;

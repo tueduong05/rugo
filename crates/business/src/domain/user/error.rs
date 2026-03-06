@@ -23,16 +23,4 @@ pub enum UserDomainError {
     AccountLocked,
     #[error("Account disabled")]
     AccountDisabled,
-
-    // Session Errors
-    #[error("Access denied")]
-    AccessDenied,
-    #[error("Invalid session")]
-    InvalidSession,
-    #[error("Session already used")]
-    SessionAlreadyUsed,
-    #[error("Session expired")]
-    SessionExpired,
-    #[error("Session revoked")]
-    SessionRevoked,
 }

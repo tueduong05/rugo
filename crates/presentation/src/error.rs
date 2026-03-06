@@ -46,6 +46,19 @@ impl ProblemDetails {
 
 fn map_base_error(base: BaseDomainError) -> ProblemDetails {
     match base {
+        BaseDomainError::InvalidSession => ProblemDetails::new(
+            StatusCode::UNAUTHORIZED,
+            "Unauthorized",
+            "Authentication failed".into(),
+        ),
+
+        BaseDomainError::AccessDenied
+        | BaseDomainError::SessionExpired
+        | BaseDomainError::SessionAlreadyUsed
+        | BaseDomainError::SessionRevoked => {
+            ProblemDetails::new(StatusCode::FORBIDDEN, "Forbidden", base.to_string())
+        }
+
         BaseDomainError::ResourceNotFound(resource) => match resource.as_str() {
             "User" | "Session" => ProblemDetails::new(
                 StatusCode::UNAUTHORIZED,
@@ -104,6 +117,8 @@ impl IntoResponse for HttpError {
                 }
             }
 
+            AppError::Base(base_err) => map_base_error(base_err),
+
             AppError::User(user_err) => match user_err {
                 UserDomainError::Base(base) => map_base_error(base),
 
@@ -111,19 +126,13 @@ impl IntoResponse for HttpError {
                     ProblemDetails::new(StatusCode::CONFLICT, "Conflict", user_err.to_string())
                 }
 
-                UserDomainError::InvalidCredentials | UserDomainError::InvalidSession => {
-                    ProblemDetails::new(
-                        StatusCode::UNAUTHORIZED,
-                        "Unauthorized",
-                        "Authentication failed".into(),
-                    )
-                }
+                UserDomainError::InvalidCredentials => ProblemDetails::new(
+                    StatusCode::UNAUTHORIZED,
+                    "Unauthorized",
+                    "Authentication failed".into(),
+                ),
 
-                UserDomainError::AccessDenied
-                | UserDomainError::SessionExpired
-                | UserDomainError::SessionAlreadyUsed
-                | UserDomainError::SessionRevoked
-                | UserDomainError::EmailNotVerified
+                UserDomainError::EmailNotVerified
                 | UserDomainError::AccountLocked
                 | UserDomainError::AccountDisabled => {
                     ProblemDetails::new(StatusCode::FORBIDDEN, "Forbidden", user_err.to_string())

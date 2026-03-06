@@ -3,7 +3,7 @@ use crate::{
         error::AppError,
         link::use_cases::post_link::dtos::{PostLinkRequest, PostLinkResponse},
     },
-    domain::user::value_objects::user_id::UserId,
+    domain::common::value_objects::user_id::UserId,
 };
 
 pub mod dtos;

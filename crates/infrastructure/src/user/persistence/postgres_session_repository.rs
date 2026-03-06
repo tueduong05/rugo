@@ -1,9 +1,6 @@
 use business::domain::{
-    common::error::BaseDomainError,
-    user::{
-        entities::RefreshToken, error::UserDomainError, repositories::SessionRepository,
-        value_objects::user_id::UserId,
-    },
+    common::{error::BaseDomainError, value_objects::user_id::UserId},
+    user::{entities::RefreshToken, error::UserDomainError, repositories::SessionRepository},
 };
 use sha2::{Digest, Sha256};
 use sqlx::PgPool;
@@ -139,7 +136,7 @@ impl SessionRepository for PostgresSessionRepository {
         .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
         if result.rows_affected() == 0 {
-            return Err(UserDomainError::SessionRevoked);
+            return Err(BaseDomainError::SessionRevoked.into());
         }
 
         Ok(())

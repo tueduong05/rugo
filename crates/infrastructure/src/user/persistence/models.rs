@@ -1,11 +1,9 @@
 use business::domain::{
-    common::value_objects::hashed_password::HashedPassword,
+    common::value_objects::{hashed_password::HashedPassword, user_id::UserId},
     user::{
         entities::{RefreshToken, User},
         error::UserDomainError,
-        value_objects::{
-            email::Email, user_id::UserId, user_status::UserStatus, username::Username,
-        },
+        value_objects::{email::Email, user_status::UserStatus, username::Username},
     },
 };
 

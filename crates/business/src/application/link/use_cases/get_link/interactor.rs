@@ -8,14 +8,15 @@ use crate::{
         link::use_cases::get_link::{GetLinkUseCase, dtos::GetLinkCommand},
     },
     domain::{
-        common::{error::BaseDomainError, services::password_services::PasswordHasher},
-        link::{
-            error::LinkDomainError,
-            repositories::LinkRepository,
-            value_objects::{original_link::OriginalLink, short_code::ShortCode},
+        common::{
+            error::BaseDomainError,
+            events::analytics_event::AnalyticsEvent,
+            services::{analytics_queue::AnalyticsQueue, password_services::PasswordHasher},
+            value_objects::original_link::OriginalLink,
         },
-        link_analytics::{
-            entities::AnalyticsEvent, error::AnalyticsDomainError, services::AnalyticsQueue,
+        link::{
+            error::LinkDomainError, repositories::LinkRepository,
+            value_objects::short_code::ShortCode,
         },
     },
 };
@@ -72,7 +73,7 @@ impl GetLinkUseCase for GetLinkInteractor {
 
         let event = AnalyticsEvent {
             link_id: link.id.ok_or_else(|| {
-                AnalyticsDomainError::from(BaseDomainError::Unexpected(
+                LinkDomainError::from(BaseDomainError::Unexpected(
                     "LinkId should be available".into(),
                 ))
             })?,
