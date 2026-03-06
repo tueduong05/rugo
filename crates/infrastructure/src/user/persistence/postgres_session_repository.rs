@@ -10,7 +10,6 @@ use sqlx::PgPool;
 
 use crate::user::persistence::models::RefreshTokenRecord;
 
-#[derive(Clone)]
 pub struct PostgresSessionRepository {
     pool: PgPool,
 }

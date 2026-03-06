@@ -3,6 +3,7 @@ use business::domain::link_analytics::{
 };
 use woothee::parser::Parser;
 
+#[derive(Default)]
 pub struct WootheeUserAgentParser {
     parser: Parser,
 }

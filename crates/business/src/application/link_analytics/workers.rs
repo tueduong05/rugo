@@ -1,28 +1,27 @@
-use crate::{
-    application::error::AppError,
-    domain::link_analytics::{
-        entities::{AnalyticsEvent, LinkAnalytics},
-        repositories::AnalyticsRepository,
-        services::{GeoLookupService, UserAgentParser},
-    },
+use std::{net::IpAddr, sync::Arc};
+
+use crate::domain::link_analytics::{
+    entities::{AnalyticsEvent, LinkAnalytics},
+    repositories::AnalyticsRepository,
+    services::{GeoLookupService, UserAgentParser},
 };
 
-// TODO: Add worker runner
-// TODO: Error variant for internal workers
-
-pub struct AnalyticsBatchWorker<R, G, U> {
-    analytics_repo: R,
+pub struct AnalyticsBatchWorker<G, U> {
+    analytics_repo: Arc<dyn AnalyticsRepository>,
     geo_provider: G,
     ua_parser: U,
 }
 
-impl<R, G, U> AnalyticsBatchWorker<R, G, U>
+impl<G, U> AnalyticsBatchWorker<G, U>
 where
-    R: AnalyticsRepository,
     G: GeoLookupService,
     U: UserAgentParser,
 {
-    pub fn new(analytics_repo: R, geo_provider: G, ua_parser: U) -> Self {
+    pub fn new(
+        analytics_repo: Arc<dyn AnalyticsRepository>,
+        geo_provider: G,
+        ua_parser: U,
+    ) -> Self {
         Self {
             analytics_repo,
             geo_provider,
@@ -30,12 +29,15 @@ where
         }
     }
 
-    pub async fn handle_batch(&self, events: Vec<AnalyticsEvent>) -> Result<(), AppError> {
+    pub async fn handle_batch(&self, events: Vec<AnalyticsEvent>) -> Result<(), String> {
+        let ips: Vec<IpAddr> = events.iter().map(|e| e.ip).collect();
+
+        let geo_results = self.geo_provider.lookup_bulk(ips).await?;
+
         let mut processed = Vec::with_capacity(events.len());
 
-        for event in events {
+        for (event, geo) in events.into_iter().zip(geo_results.into_iter()) {
             let ua_info = self.ua_parser.parse(&event.user_agent);
-            let geo = self.geo_provider.lookup(event.ip);
 
             let link_analytics = LinkAnalytics::new(
                 event.link_id,
@@ -50,16 +52,11 @@ where
             processed.push(link_analytics);
         }
 
-        self.analytics_repo.save_batch(processed).await?;
+        self.analytics_repo
+            .save_batch(processed)
+            .await
+            .map_err(|s| s.to_string())?;
 
         Ok(())
-    }
-
-    pub async fn flush(&self, events: Vec<AnalyticsEvent>) -> Result<(), AppError> {
-        if events.is_empty() {
-            return Ok(());
-        }
-
-        self.handle_batch(events).await
     }
 }

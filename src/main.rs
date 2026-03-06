@@ -1,8 +1,8 @@
-use std::{env, net::SocketAddr};
+use std::{env, net::SocketAddr, time::Duration};
 
 use infrastructure::db;
 use presentation::build_app;
-use tokio::net::TcpListener;
+use tokio::{net::TcpListener, time::timeout};
 
 mod app_state;
 
@@ -15,7 +15,7 @@ async fn main() {
 
     db::run_migrations(&pool).await.unwrap();
 
-    let states = app_state::bootstrap(pool).await;
+    let (states, worker_handle) = app_state::bootstrap(pool).await;
 
     let app = build_app(states.user, states.link, states.analytics);
 
@@ -23,5 +23,12 @@ async fn main() {
     let listener = TcpListener::bind(addr).await.unwrap();
     println!("🚀 Server running on http://{}", addr);
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app)
+        .with_graceful_shutdown(async {
+            tokio::signal::ctrl_c().await.unwrap();
+        })
+        .await
+        .unwrap();
+
+    let _ = timeout(Duration::from_secs(10), worker_handle).await;
 }

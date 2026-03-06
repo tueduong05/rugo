@@ -1,9 +1,4 @@
-use business::domain::{
-    common::error::BaseDomainError,
-    link_analytics::{
-        entities::AnalyticsEvent, error::AnalyticsDomainError, services::AnalyticsQueue,
-    },
-};
+use business::domain::link_analytics::{entities::AnalyticsEvent, services::AnalyticsQueue};
 use tokio::sync::mpsc;
 
 pub struct MPSCAnalyticsQueue {
@@ -18,11 +13,8 @@ impl MPSCAnalyticsQueue {
 
 #[async_trait::async_trait]
 impl AnalyticsQueue for MPSCAnalyticsQueue {
-    async fn push(&self, event: AnalyticsEvent) -> Result<(), AnalyticsDomainError> {
-        self.sender
-            .send(event)
-            .await
-            .map_err(|_| BaseDomainError::Infrastructure("Analytics channel closed".into()))?;
+    async fn push(&self, event: AnalyticsEvent) -> Result<(), String> {
+        self.sender.send(event).await.map_err(|s| s.to_string())?;
 
         Ok(())
     }

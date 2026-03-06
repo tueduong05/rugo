@@ -13,7 +13,6 @@ use sqlx::PgPool;
 
 use crate::user::persistence::models::{DbUserStatus, UserRecord};
 
-#[derive(Clone)]
 pub struct PostgresUserRepository {
     pool: PgPool,
 }

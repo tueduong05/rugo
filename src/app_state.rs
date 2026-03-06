@@ -7,7 +7,10 @@ use business::{
             get_user_links::interactor::GetUserLinksInteractor,
             post_link::interactor::PostLinkInteractor,
         },
-        link_analytics::use_cases::get_link_stats::interactor::GetLinkStatsInteractor,
+        link_analytics::{
+            use_cases::get_link_stats::interactor::GetLinkStatsInteractor,
+            workers::AnalyticsBatchWorker,
+        },
         user::use_cases::{
             get_me::interactor::GetMeInteractor, login::interactor::LoginInteractor,
             logout::interactor::LogoutInteractor, refresh::interactor::RefreshSessionInteractor,
@@ -16,7 +19,7 @@ use business::{
     },
     domain::{
         link::services::short_code_services::ShortCodeGenerator,
-        link_analytics::services::AnalyticsQueue,
+        link_analytics::{entities::AnalyticsEvent, services::AnalyticsQueue},
     },
 };
 use infrastructure::{
@@ -27,7 +30,11 @@ use infrastructure::{
     },
     link_analytics::{
         persistence::postgres_analytics_repository::PostgresAnalyticsRepository,
-        services::mock_services::MockAnalyticsQueue,
+        runner::run_analytics_worker,
+        services::{
+            mock_geo_service::MockGeoService, mpsc_analytics_queue::MPSCAnalyticsQueue,
+            woothee_parser::WootheeUserAgentParser,
+        },
     },
     user::{
         persistence::{
@@ -39,6 +46,7 @@ use infrastructure::{
 };
 use presentation::{link::LinkState, link_analytics::AnalyticsState, user::UserState};
 use sqlx::PgPool;
+use tokio::{sync::mpsc, task::JoinHandle};
 
 pub struct AppStates {
     pub user: UserState,
@@ -46,7 +54,7 @@ pub struct AppStates {
     pub analytics: AnalyticsState,
 }
 
-pub async fn bootstrap(pool: PgPool) -> AppStates {
+pub async fn bootstrap(pool: PgPool) -> (AppStates, JoinHandle<()>) {
     let user_repo = Arc::new(PostgresUserRepository::new(pool.clone()));
     let session_repo = Arc::new(PostgresSessionRepository::new(pool.clone()));
     let link_repo = Arc::new(PostgresLinkRepository::new(pool.clone()));
@@ -64,7 +72,17 @@ pub async fn bootstrap(pool: PgPool) -> AppStates {
 
     let short_code_generator: Arc<dyn ShortCodeGenerator> = Arc::new(RandomShortCodeGenerator);
 
-    let analytics_queue: Arc<dyn AnalyticsQueue> = Arc::new(MockAnalyticsQueue);
+    let (tx, rx) = mpsc::channel::<AnalyticsEvent>(1024);
+
+    let analytics_queue: Arc<dyn AnalyticsQueue> = Arc::new(MPSCAnalyticsQueue::new(tx));
+
+    let geo = MockGeoService;
+    let ua = WootheeUserAgentParser::new();
+    let worker = AnalyticsBatchWorker::new(analytics_repo.clone(), geo, ua);
+
+    let worker_handle = tokio::spawn(async move {
+        run_analytics_worker::<MockGeoService, WootheeUserAgentParser>(rx, worker).await;
+    });
 
     let user_state = UserState {
         session_service: session_service.clone(),
@@ -106,9 +124,12 @@ pub async fn bootstrap(pool: PgPool) -> AppStates {
         get_link_stats_interactor: Arc::new(GetLinkStatsInteractor::new(link_repo, analytics_repo)),
     };
 
-    AppStates {
-        user: user_state,
-        link: link_state,
-        analytics: analytics_state,
-    }
+    (
+        AppStates {
+            user: user_state,
+            link: link_state,
+            analytics: analytics_state,
+        },
+        worker_handle,
+    )
 }
