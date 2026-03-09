@@ -1,4 +1,7 @@
-use crate::domain::common::{error::BaseDomainError, value_objects::{original_link::OriginalLink, user_id::UserId}};
+use crate::domain::common::{
+    error::BaseDomainError,
+    value_objects::{original_link::OriginalLink, user_id::UserId},
+};
 
 #[async_trait::async_trait]
 pub trait LinkProvider: Send + Sync {

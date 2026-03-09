@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
 use business::application::{
+    common::services::session_service::SessionService,
     link::use_cases::{
         get_link::GetLinkUseCase, get_user_links::GetUserLinksUseCase, post_link::PostLinkUseCase,
     },
-    common::services::session_service::SessionService,
 };
 
 pub mod handlers;

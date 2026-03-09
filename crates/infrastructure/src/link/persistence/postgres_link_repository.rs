@@ -7,6 +7,7 @@ use business::domain::{
         value_objects::short_code::ShortCode,
     },
 };
+use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 
 use crate::link::persistence::models::LinkRecord;
@@ -104,5 +105,27 @@ impl LinkRepository for PostgresLinkRepository {
             .into_iter()
             .map(|r| r.try_into_domain())
             .collect::<Result<Vec<Link>, LinkDomainError>>()
+    }
+
+    async fn increment_clicks(&self, id: u64, now: DateTime<Utc>) -> Result<u64, LinkDomainError> {
+        let result = sqlx::query!(
+            r#"
+            UPDATE links
+            SET 
+                current_clicks = current_clicks + 1,
+                updated_at = $1
+            WHERE id = $2
+                AND is_active = true
+                AND (expires_at IS NULL OR expires_at > $1)
+                AND (max_clicks IS NULL OR current_clicks < max_clicks)
+            "#,
+            now,
+            id as i64
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
+
+        Ok(result.rows_affected())
     }
 }

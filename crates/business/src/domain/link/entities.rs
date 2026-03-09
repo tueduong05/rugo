@@ -1,7 +1,9 @@
 use chrono::{DateTime, Utc};
 
 use crate::domain::{
-    common::value_objects::{hashed_password::HashedPassword, original_link::OriginalLink, user_id::UserId},
+    common::value_objects::{
+        hashed_password::HashedPassword, original_link::OriginalLink, user_id::UserId,
+    },
     link::{error::LinkDomainError, value_objects::short_code::ShortCode},
 };
 
@@ -14,6 +16,7 @@ pub struct Link {
     pub is_custom: bool,
     pub expires_at: Option<DateTime<Utc>>,
     pub hashed_password: Option<HashedPassword>,
+    pub current_clicks: u32,
     pub max_clicks: Option<u32>,
     pub is_active: bool,
     pub created_at: DateTime<Utc>,
@@ -33,6 +36,8 @@ pub struct CreateLinkCommand {
 
 impl Link {
     pub fn new(cmd: CreateLinkCommand) -> Self {
+        let now = Utc::now();
+
         Self {
             id: None,
             user_id: cmd.user_id,
@@ -41,10 +46,11 @@ impl Link {
             is_custom: cmd.is_custom,
             expires_at: cmd.expires_at,
             hashed_password: cmd.hashed_password,
+            current_clicks: 0,
             max_clicks: cmd.max_clicks,
             is_active: cmd.is_active,
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
+            created_at: now,
+            updated_at: now,
         }
     }
 

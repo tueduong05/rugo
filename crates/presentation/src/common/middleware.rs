@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::{extract::FromRequestParts, http::request::Parts};
 use business::{
     application::{common::services::session_service::SessionService, error::AppError},
-    domain::{common::{error::BaseDomainError, value_objects::user_id::UserId}},
+    domain::common::{error::BaseDomainError, value_objects::user_id::UserId},
 };
 
 use crate::error::HttpError;

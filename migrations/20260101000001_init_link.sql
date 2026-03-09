@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS links (
     is_custom BOOLEAN NOT NULL DEFAULT FALSE,
     expires_at TIMESTAMPTZ,
     hashed_password TEXT,
+    current_clicks INTEGER NOT NULL DEFAULT 0,
     max_clicks INTEGER,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

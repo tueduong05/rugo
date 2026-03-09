@@ -45,6 +45,7 @@ impl GetLinkInteractor {
 impl GetLinkUseCase for GetLinkInteractor {
     async fn execute(&self, cmd: GetLinkCommand) -> Result<OriginalLink, AppError> {
         let short_code = ShortCode::new(cmd.short_code)?;
+        let now = Utc::now();
 
         let link = self
             .link_repo
@@ -54,8 +55,7 @@ impl GetLinkUseCase for GetLinkInteractor {
                 LinkDomainError::from(BaseDomainError::ResourceNotFound("Link".into()))
             })?;
 
-        // TODO: Get current clicks count when analytics is implemented
-        link.is_valid(Utc::now(), 0)?;
+        link.is_valid(Utc::now(), link.current_clicks)?;
 
         let original_link = match (cmd.password, &link.hashed_password) {
             (Some(p), Some(hashed)) => {
@@ -71,16 +71,22 @@ impl GetLinkUseCase for GetLinkInteractor {
             (_, None) => link.original_link,
         };
 
+        let link_id = link
+            .id
+            .ok_or(LinkDomainError::from(BaseDomainError::Unexpected(
+                "LinkId should be available".into(),
+            )))?;
+
+        if self.link_repo.increment_clicks(link_id, now).await? == 0 {
+            return Err(LinkDomainError::LinkClickLimitReached.into());
+        }
+
         let event = AnalyticsEvent {
-            link_id: link.id.ok_or_else(|| {
-                LinkDomainError::from(BaseDomainError::Unexpected(
-                    "LinkId should be available".into(),
-                ))
-            })?,
+            link_id,
             referrer: cmd.referrer,
             user_agent: cmd.user_agent,
             ip: cmd.ip,
-            timestamp: Utc::now(),
+            timestamp: now,
         };
 
         let _ = self.analytics_queue.push(event).await;

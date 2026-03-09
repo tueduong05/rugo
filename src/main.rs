@@ -23,12 +23,15 @@ async fn main() {
     let listener = TcpListener::bind(addr).await.unwrap();
     println!("🚀 Server running on http://{}", addr);
 
-    axum::serve(listener, app)
-        .with_graceful_shutdown(async {
-            tokio::signal::ctrl_c().await.unwrap();
-        })
-        .await
-        .unwrap();
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .with_graceful_shutdown(async {
+        tokio::signal::ctrl_c().await.unwrap();
+    })
+    .await
+    .unwrap();
 
     let _ = timeout(Duration::from_secs(10), worker_handle).await;
 }

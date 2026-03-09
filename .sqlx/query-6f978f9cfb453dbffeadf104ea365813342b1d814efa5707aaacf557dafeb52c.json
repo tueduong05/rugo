@@ -40,21 +40,26 @@
       },
       {
         "ordinal": 7,
-        "name": "max_clicks",
+        "name": "current_clicks",
         "type_info": "Int4"
       },
       {
         "ordinal": 8,
+        "name": "max_clicks",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
         "name": "is_active",
         "type_info": "Bool"
       },
       {
-        "ordinal": 9,
+        "ordinal": 10,
         "name": "created_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 10,
+        "ordinal": 11,
         "name": "updated_at",
         "type_info": "Timestamptz"
       }
@@ -72,6 +77,7 @@
       false,
       true,
       true,
+      false,
       true,
       false,
       false,

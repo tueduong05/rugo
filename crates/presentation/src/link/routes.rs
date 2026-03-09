@@ -2,6 +2,7 @@ use axum::{
     Extension, Router,
     routing::{get, post},
 };
+use axum_client_ip::ClientIpSource;
 
 use crate::link::{
     LinkState,
@@ -9,14 +10,17 @@ use crate::link::{
 };
 
 pub fn link_routes(state: LinkState) -> Router<LinkState> {
+    let ip_source = ClientIpSource::ConnectInfo;
+
     let public_routes = Router::new()
         .route("/", post(post_link_handler))
         .route("/{short_code}", get(get_link_handler))
-        .layer(Extension(state.session_service.clone()));
+        .layer(Extension(ip_source));
 
-    let protected_routes = Router::new()
-        .route("/me", get(get_user_links_handler))
-        .layer(Extension(state.session_service.clone()));
+    let protected_routes = Router::new().route("/me", get(get_user_links_handler));
 
-    Router::new().merge(public_routes).merge(protected_routes)
+    Router::new()
+        .merge(public_routes)
+        .merge(protected_routes)
+        .layer(Extension(state.session_service.clone()))
 }

@@ -1,10 +1,13 @@
 use std::{net::IpAddr, sync::Arc};
 
-use crate::domain::{common::events::analytics_event::AnalyticsEvent, link_analytics::{
-    entities::LinkAnalytics,
-    repositories::AnalyticsRepository,
-    services::{GeoLookupService, UserAgentParser},
-}};
+use crate::domain::{
+    common::events::analytics_event::AnalyticsEvent,
+    link_analytics::{
+        entities::LinkAnalytics,
+        repositories::AnalyticsRepository,
+        services::{GeoLookupService, UserAgentParser},
+    },
+};
 
 pub struct AnalyticsBatchWorker<G, U> {
     analytics_repo: Arc<dyn AnalyticsRepository>,

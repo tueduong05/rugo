@@ -11,7 +11,9 @@ use crate::{
     domain::{
         common::{
             services::password_services::PasswordHasher,
-            value_objects::{hashed_password::HashedPassword, original_link::OriginalLink, user_id::UserId},
+            value_objects::{
+                hashed_password::HashedPassword, original_link::OriginalLink, user_id::UserId,
+            },
         },
         link::{
             entities::{CreateLinkCommand, Link},

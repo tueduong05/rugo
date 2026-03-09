@@ -1,12 +1,13 @@
 use std::{collections::HashMap, sync::Mutex};
 
 use business::domain::{
+    common::value_objects::user_id::UserId,
     link::{
         entities::Link, error::LinkDomainError, repositories::LinkRepository,
         value_objects::short_code::ShortCode,
     },
-    common::value_objects::user_id::UserId,
 };
+use chrono::{DateTime, Utc};
 
 #[derive(Default)]
 pub struct MockLinkRepository {
@@ -71,5 +72,31 @@ impl LinkRepository for MockLinkRepository {
     async fn find_by_user_id(&self, user_id: UserId) -> Result<Vec<Link>, LinkDomainError> {
         let user_links = self.user_links.lock().unwrap();
         Ok(user_links.get(&user_id).cloned().unwrap_or_default())
+    }
+
+    async fn increment_clicks(&self, id: u64, now: DateTime<Utc>) -> Result<u64, LinkDomainError> {
+        let mut ids = self.ids.lock().unwrap();
+        let mut short_codes = self.short_codes.lock().unwrap();
+
+        if let Some(link) = ids.get_mut(&id) {
+            let is_expired = link.expires_at.is_some_and(|expiry| now > expiry);
+            let limit_reached = link
+                .max_clicks
+                .is_some_and(|max| link.current_clicks >= max);
+
+            if !link.is_active || is_expired || limit_reached {
+                return Ok(0);
+            }
+
+            link.current_clicks += 1;
+            link.updated_at = now;
+
+            let updated_link = link.clone();
+            short_codes.insert(updated_link.short_code.to_string(), updated_link);
+
+            return Ok(1);
+        }
+
+        Ok(0)
     }
 }
