@@ -2,6 +2,8 @@
 
 Rugo is a personal portfolio project designed to demonstrate the implementation of Clean Architecture principles using the Rust programming language and the Axum web framework. It serves as a functional URL shortening service with a focus on maintainable, testable, and decoupled code.
 
+![Architecture Diagram](assets/rugo.jpg)
+
 ## ✨ Features
 
 - 🔐 Secure Authentication: User lifecycle management with JWT-based sessions and refresh token rotation.
@@ -46,7 +48,7 @@ Rugo is a personal portfolio project designed to demonstrate the implementation 
 | **GET** | `/{short_code}`              | Direct entry point for redirection. |
 | **GET** | `/api/v1/links/{short_code}` | API entry point for redirection.    |
 
-#### Redirection Status Codes:
+#### Redirection Status Codes
 
 307 Temporary Redirect: Success.
 
@@ -60,41 +62,28 @@ Rugo is a personal portfolio project designed to demonstrate the implementation 
 
 ## 🚦 Getting Started
 
-### ⚙️ Environment Configuration
+### 1. Environment Configuration
 
-Regardless of your installation method, you must set up your environment variables.
-
-Copy the example configuration:
+Copy the example configuration and adjust the values to match your local setup.
 
 ```bash
 cp .env.example .env
 ```
 
-Open .env and adjust the values (Database credentials, JWT secrets, etc.) to match your local setup.
+### 2. Infrastructure & Database
 
-### ❄️ Development with Nix (Recommended)
-
-If you have Nix installed with Flakes enabled, you can enter a consistent development shell containing all necessary dependencies (Rust toolchain, SQLx CLI, PostgreSQL client, etc.) by running:
+Rugo uses Docker to manage the database and SQLx for the schema. You will need the Rust toolchain installed (or use `nix develop` to enter the flake-provided shell).
 
 ```bash
-nix develop
+docker compose up -d
+sqlx database create
 ```
 
-> Note: You still need to create your .env file as described above.
+### 3. Execution
 
-### 🛠️ Manual Installation
-
-#### Clone the repository:
+Launch the application. The service is configured to run migrations automatically on startup.
 
 ```bash
-git clone https://github.com/tueduong05/rugo.git
-cd rugo
-```
-
-#### Run Migrations & Start:
-
-```bash
-sqlx migrate run
 cargo run
 ```
 
