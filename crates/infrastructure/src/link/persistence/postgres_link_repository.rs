@@ -24,6 +24,7 @@ impl PostgresLinkRepository {
 
 #[async_trait::async_trait]
 impl LinkRepository for PostgresLinkRepository {
+    #[tracing::instrument(skip(self, link), err, target = "infrastructure")]
     async fn create(&self, link: &Link) -> Result<(), LinkDomainError> {
         let record = LinkRecord::from(link);
 
@@ -60,6 +61,7 @@ impl LinkRepository for PostgresLinkRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self), err, target = "infrastructure")]
     async fn find_by_id(&self, id: u64) -> Result<Option<Link>, LinkDomainError> {
         let record = sqlx::query_as!(LinkRecord, "SELECT * FROM links WHERE id = $1", id as i64)
             .fetch_optional(&self.pool)
@@ -69,6 +71,7 @@ impl LinkRepository for PostgresLinkRepository {
         record.map(|r| r.try_into_domain()).transpose()
     }
 
+    #[tracing::instrument(skip(self, short_code), err, target = "infrastructure")]
     async fn find_by_short_code(
         &self,
         short_code: &ShortCode,
@@ -87,6 +90,7 @@ impl LinkRepository for PostgresLinkRepository {
         record.map(|r| r.try_into_domain()).transpose()
     }
 
+    #[tracing::instrument(skip(self), err, target = "infrastructure")]
     async fn find_by_user_id(&self, user_id: UserId) -> Result<Vec<Link>, LinkDomainError> {
         let records = sqlx::query_as!(
             LinkRecord,
@@ -107,6 +111,7 @@ impl LinkRepository for PostgresLinkRepository {
             .collect::<Result<Vec<Link>, LinkDomainError>>()
     }
 
+    #[tracing::instrument(skip(self, now), err, target = "infrastructure")]
     async fn increment_clicks(&self, id: u64, now: DateTime<Utc>) -> Result<u64, LinkDomainError> {
         let result = sqlx::query!(
             r#"

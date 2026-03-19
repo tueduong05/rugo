@@ -24,6 +24,7 @@ impl PostgresSessionRepository {
 
 #[async_trait::async_trait]
 impl SessionRepository for PostgresSessionRepository {
+    #[tracing::instrument(skip(self, session), err, target = "infrastructure")]
     async fn save(
         &self,
         session: RefreshToken,
@@ -88,6 +89,7 @@ impl SessionRepository for PostgresSessionRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self, token), err, target = "infrastructure")]
     async fn find_by_token(&self, token: &str) -> Result<RefreshToken, UserDomainError> {
         let hashed = self.hash_token(token);
 
@@ -117,6 +119,7 @@ impl SessionRepository for PostgresSessionRepository {
         record.try_into_domain()
     }
 
+    #[tracing::instrument(skip(self, token), err, target = "infrastructure")]
     async fn revoke(&self, user_id: UserId, token: &str) -> Result<(), UserDomainError> {
         let hashed = self.hash_token(token);
 
@@ -142,6 +145,7 @@ impl SessionRepository for PostgresSessionRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self), err, target = "infrastructure")]
     async fn revoke_all(&self, user_id: UserId) -> Result<(), UserDomainError> {
         sqlx::query!(
             r#"

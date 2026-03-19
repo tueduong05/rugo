@@ -9,6 +9,8 @@ mod config;
 
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::fmt::init();
+
     dotenvy::dotenv().ok();
     let config = config::AppConfig::from_env().expect("Failed to load app configuration");
 
@@ -22,7 +24,7 @@ async fn main() {
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     let listener = TcpListener::bind(addr).await.unwrap();
-    println!("🚀 Server running on http://{}", addr);
+    tracing::info!(%addr, "Server started");
 
     axum::serve(
         listener,

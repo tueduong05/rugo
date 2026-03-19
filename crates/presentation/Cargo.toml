@@ -14,6 +14,8 @@ axum-client-ip = "1.3.1"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
+tower-http = { version = "0.6.8", features = ["trace"] }
+tracing = "0.1.44"
 utoipa = "5.4.0"
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
 validator = "0.20.0"

@@ -98,7 +98,10 @@ impl From<AppError> for HttpError {
 
 impl IntoResponse for HttpError {
     fn into_response(self) -> Response {
-        let problem = match self.0 {
+        let error = self.0;
+        let error_message = error.to_string();
+
+        let problem = match error {
             AppError::Validation(val_errors) => {
                 let status = StatusCode::BAD_REQUEST;
                 let details: Vec<_> = val_errors
@@ -194,6 +197,11 @@ impl IntoResponse for HttpError {
 
         let status =
             StatusCode::from_u16(problem.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+
+        if status.is_server_error() {
+            tracing::error!("Internal server error: {}", error_message);
+        }
+
         (status, Json(problem)).into_response()
     }
 }

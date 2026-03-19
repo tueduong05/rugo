@@ -27,6 +27,7 @@ impl PostgresAnalyticsRepository {
 
 #[async_trait::async_trait]
 impl AnalyticsRepository for PostgresAnalyticsRepository {
+    #[tracing::instrument(skip(self, items), err, target = "infrastructure")]
     async fn save_batch(&self, items: Vec<LinkAnalytics>) -> Result<(), AnalyticsDomainError> {
         let records: Vec<LinkAnalyticsRecord> =
             items.iter().map(LinkAnalyticsRecord::from).collect();
@@ -74,6 +75,7 @@ impl AnalyticsRepository for PostgresAnalyticsRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self), err, target = "infrastructure")]
     async fn get_total_clicks(&self, link_id: u64) -> Result<u64, AnalyticsDomainError> {
         let count: i64 = sqlx::query_scalar!(
             "SELECT COUNT(*) FROM link_analytics WHERE link_id = $1",
@@ -87,6 +89,7 @@ impl AnalyticsRepository for PostgresAnalyticsRepository {
         Ok(count as u64)
     }
 
+    #[tracing::instrument(skip(self), err, target = "infrastructure")]
     async fn get_daily_clicks(
         &self,
         link_id: u64,
@@ -120,6 +123,7 @@ impl AnalyticsRepository for PostgresAnalyticsRepository {
         Ok(points)
     }
 
+    #[tracing::instrument(skip(self), err, target = "infrastructure")]
     async fn get_stats_by_dimension(
         &self,
         link_id: u64,

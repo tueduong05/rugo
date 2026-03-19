@@ -23,6 +23,7 @@ impl PostgresUserRepository {
 
 #[async_trait::async_trait]
 impl UserRepository for PostgresUserRepository {
+    #[tracing::instrument(skip(self, user), err, target = "infrastructure")]
     async fn save(&self, user: &User) -> Result<(), UserDomainError> {
         let user_record = UserRecord::from(user);
 
@@ -58,6 +59,7 @@ impl UserRepository for PostgresUserRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self, identifier), err, target = "infrastructure")]
     async fn find_by_identifier(
         &self,
         identifier: &LoginIdentifier,
@@ -95,6 +97,7 @@ impl UserRepository for PostgresUserRepository {
         Ok(row.map(|r| r.try_into_domain()).transpose()?)
     }
 
+    #[tracing::instrument(skip(self), err, target = "infrastructure")]
     async fn find_by_user_id(&self, user_id: UserId) -> Result<Option<User>, UserDomainError> {
         let record_opt = sqlx::query_as!(
             UserRecord,
