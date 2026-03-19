@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use crate::config::JwtConfig;
+
 use business::{
     application::{
         link::{
@@ -59,7 +61,7 @@ pub struct AppStates {
     pub analytics: AnalyticsState,
 }
 
-pub async fn bootstrap(pool: PgPool) -> (AppStates, JoinHandle<()>) {
+pub async fn bootstrap(pool: PgPool, jwt_config: JwtConfig) -> (AppStates, JoinHandle<()>) {
     let user_repo = Arc::new(PostgresUserRepository::new(pool.clone()));
     let session_repo = Arc::new(PostgresSessionRepository::new(pool.clone()));
     let link_repo = Arc::new(PostgresLinkRepository::new(pool.clone()));
@@ -71,10 +73,10 @@ pub async fn bootstrap(pool: PgPool) -> (AppStates, JoinHandle<()>) {
     let password_hasher = Arc::new(Argon2idHasher);
     let session_service = Arc::new(JwtService::new(
         session_repo,
-        "123".into(),
-        "me".into(),
-        900,
-        3600,
+        jwt_config.secret,
+        jwt_config.issuer,
+        jwt_config.access_token_seconds,
+        jwt_config.refresh_token_seconds,
     ));
 
     let short_code_generator: Arc<dyn ShortCodeGenerator> = Arc::new(RandomShortCodeGenerator);

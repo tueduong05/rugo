@@ -1,21 +1,22 @@
-use std::{env, net::SocketAddr, time::Duration};
+use std::{net::SocketAddr, time::Duration};
 
 use infrastructure::db;
 use presentation::build_app;
 use tokio::{net::TcpListener, time::timeout};
 
 mod app_state;
+mod config;
 
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let config = config::AppConfig::from_env().expect("Failed to load app configuration");
 
-    let pool = db::create_pool(&database_url).await.unwrap();
+    let pool = db::create_pool(&config.database_url).await.unwrap();
 
     db::run_migrations(&pool).await.unwrap();
 
-    let (states, worker_handle) = app_state::bootstrap(pool).await;
+    let (states, worker_handle) = app_state::bootstrap(pool, config.jwt).await;
 
     let app = build_app(states.user, states.link, states.analytics);
 
