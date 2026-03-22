@@ -1,4 +1,6 @@
-use axum::{Router, routing::get};
+use axum::{Router, http::StatusCode, routing::get};
+use axum_client_ip::ClientIpSource;
+use axum_prometheus::PrometheusMetricLayer;
 use tower_http::trace::{
     DefaultMakeSpan, DefaultOnFailure, DefaultOnRequest, DefaultOnResponse, TraceLayer,
 };
@@ -25,6 +27,10 @@ pub fn build_app(
     link_state: LinkState,
     analytics_states: AnalyticsState,
 ) -> Router {
+    let ip_source = ClientIpSource::ConnectInfo;
+
+    let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
+
     let user_api = Router::new()
         .nest("/api/v1/users", user_routes(user_state.clone()))
         .with_state(user_state);
@@ -39,10 +45,17 @@ pub fn build_app(
         .with_state(analytics_states);
 
     Router::new()
+        .route("/favicon.ico", get(|| async { StatusCode::NO_CONTENT }))
         .merge(user_api)
         .merge(link_api)
         .merge(analytics_api)
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
+        .route(
+            "/metrics",
+            get(move || async move { metric_handle.render() }),
+        )
+        .layer(ip_source.into_extension())
+        .layer(prometheus_layer)
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(
