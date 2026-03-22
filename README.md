@@ -15,11 +15,12 @@ Rugo is a personal portfolio project designed to demonstrate the implementation 
 
 ## 🛠️ Tech Stack
 
-- Language: Rust
-- Web Framework: Axum
-- Documentation: Utoipa (OpenAPI)
-- Database: PostgreSQL with SQLx
-- Auth: JWT (JSON Web Tokens)
+- **Language:** Rust
+- **Web Framework:** Axum
+- **Documentation:** Utoipa (OpenAPI)
+- **Database:** PostgreSQL with SQLx
+- **Observability:** Prometheus & Grafana (via `axum-prometheus`)
+- **Auth:** JWT (JSON Web Tokens)
 
 ## 📖 API Reference
 
@@ -70,16 +71,30 @@ Copy the example configuration and adjust the values to match your local setup.
 cp .env.example .env
 ```
 
-### 2. Infrastructure & Database
+### 2. Infrastructure & Dependencies
 
-Rugo uses Docker to manage the database and SQLx for the schema. You will need the Rust toolchain installed (or use `nix develop` to enter the flake-provided shell).
+Rugo provides a declarative development environment via Nix. Entering the shell ensures you have the required toolchain available without manual installation:
+
+- **Runtime:** Rust, PostgreSQL
+- **Tooling:** SQLx-CLI, Docker, Docker Compose
+- **Testing:** k6 (Load Testing)
+
+```bash
+nix develop
+```
+
+Alternatively, ensure you have **Docker** and the **Rust toolchain** installed manually on your system.
+
+### 3. Database Setup
+
+Rugo uses Docker to manage the database and SQLx for the schema.
 
 ```bash
 docker compose up -d
 sqlx database create
 ```
 
-### 3. Execution
+### 4. Execution
 
 Launch the application. The service is configured to run migrations automatically on startup.
 
@@ -90,6 +105,22 @@ cargo run
 #### Documentation
 
 Once the server is running, the interactive Swagger UI is available at /swagger-ui.
+
+## 📊 Monitoring & Observability
+
+Rugo is instrumented with Prometheus to export real-time metrics, allowing for deep visibility into request lifecycle and PostgreSQL persistence performance without adding significant overhead to the Rust runtime.
+
+### Live Metrics Dashboard
+
+![Monitoring Dashboard](assets/monitoring-dashboard.png)
+
+### Load Testing
+
+A k6 smoke test is provided to validate system stability and populate the observability dashboard.
+
+```bash
+k6 run tests/smoke_test.js
+```
 
 ## 🛡️ Security Implementation
 

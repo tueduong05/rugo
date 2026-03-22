@@ -33,6 +33,7 @@
           bacon
           cargo-deny
           just
+          k6
           rust-analyzer
           rustToolchain
           sqlx-cli
