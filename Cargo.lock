@@ -2030,6 +2030,7 @@ dependencies = [
  "dotenvy",
  "infrastructure",
  "presentation",
+ "redis",
  "sqlx",
  "tokio",
  "tracing",

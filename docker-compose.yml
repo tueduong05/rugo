@@ -21,6 +21,13 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:8
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
   rugo:
     build: .
     container_name: rugo
@@ -30,11 +37,14 @@ services:
     env_file: .env
     environment:
       - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      - REDIS_URL=redis://redis:6379
     volumes:
       - ./migrations:/app/migrations
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   prometheus:
     image: prom/prometheus:latest

@@ -9,19 +9,23 @@ pub struct JwtConfig {
 
 pub struct AppConfig {
     pub database_url: String,
+    pub redis_url: String,
     pub jwt: JwtConfig,
+    pub link_cache_ttl_seconds: u64,
 }
 
 impl AppConfig {
     pub fn from_env() -> Result<Self, String> {
         Ok(Self {
             database_url: get_required_env("DATABASE_URL")?,
+            redis_url: get_required_env("REDIS_URL")?,
             jwt: JwtConfig {
                 secret: get_required_env("JWT_SECRET")?,
                 issuer: get_required_env("JWT_ISSUER")?,
                 access_token_seconds: get_required_u64_env("JWT_ACCESS_TOKEN_SECONDS")?,
                 refresh_token_seconds: get_required_u64_env("JWT_REFRESH_TOKEN_SECONDS")?,
             },
+            link_cache_ttl_seconds: get_required_u64_env("LINK_CACHE_TTL_SECONDS")?,
         })
     }
 }

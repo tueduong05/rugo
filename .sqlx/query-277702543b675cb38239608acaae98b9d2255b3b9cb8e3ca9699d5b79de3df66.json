@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE links\n            SET \n                current_clicks = current_clicks + $2,\n                updated_at = $3\n            WHERE id = $1\n                AND is_active = true\n                AND (expires_at IS NULL OR expires_at > $3)\n                AND (max_clicks IS NULL OR current_clicks + $2 <= max_clicks)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int4",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "277702543b675cb38239608acaae98b9d2255b3b9cb8e3ca9699d5b79de3df66"
+}

@@ -5,9 +5,10 @@ use business::domain::{
     link::{entities::Link, error::LinkDomainError, value_objects::short_code::ShortCode},
 };
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use sqlx::{prelude::FromRow, types::Uuid};
 
-#[derive(FromRow)]
+#[derive(Serialize, Deserialize, FromRow)]
 pub struct LinkRecord {
     pub id: Option<i64>,
     pub user_id: Option<Uuid>,

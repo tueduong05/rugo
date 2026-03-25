@@ -26,13 +26,15 @@ use business::{
         common::{
             events::analytics_event::AnalyticsEvent, services::analytics_queue::AnalyticsQueue,
         },
-        link::services::short_code_services::ShortCodeGenerator,
+        link::{repositories::LinkRepository, services::short_code_services::ShortCodeGenerator},
     },
 };
 use infrastructure::{
     common::security::password_services::{Argon2idHasher, ZxcvbnPolicy},
     link::{
+        persistence::cache_aside_link_repository::CacheAsideLinkRepository,
         persistence::postgres_link_repository::PostgresLinkRepository,
+        persistence::redis_link_repository::RedisLinkRepository,
         services::short_code_services::RandomShortCodeGenerator,
     },
     link_analytics::{
@@ -52,6 +54,7 @@ use infrastructure::{
     },
 };
 use presentation::{link::LinkState, link_analytics::AnalyticsState, user::UserState};
+use redis::aio::ConnectionManager;
 use sqlx::PgPool;
 use tokio::{sync::mpsc, task::JoinHandle};
 
@@ -61,10 +64,21 @@ pub struct AppStates {
     pub analytics: AnalyticsState,
 }
 
-pub async fn bootstrap(pool: PgPool, jwt_config: JwtConfig) -> (AppStates, JoinHandle<()>) {
+pub async fn bootstrap(
+    pool: PgPool,
+    redis_manager: ConnectionManager,
+    jwt_config: JwtConfig,
+    link_cache_ttl_seconds: u64,
+) -> (AppStates, JoinHandle<()>) {
     let user_repo = Arc::new(PostgresUserRepository::new(pool.clone()));
     let session_repo = Arc::new(PostgresSessionRepository::new(pool.clone()));
-    let link_repo = Arc::new(PostgresLinkRepository::new(pool.clone()));
+    let postgres_link_repo: Arc<dyn LinkRepository> =
+        Arc::new(PostgresLinkRepository::new(pool.clone()));
+    let redis_link_repo = RedisLinkRepository::new(redis_manager, link_cache_ttl_seconds);
+    let link_repo: Arc<dyn LinkRepository> = Arc::new(CacheAsideLinkRepository::new(
+        postgres_link_repo.clone(),
+        Arc::new(redis_link_repo),
+    ));
     let analytics_repo = Arc::new(PostgresAnalyticsRepository::new(pool.clone()));
 
     let link_provider = Arc::new(LinkProviderImpl::new(link_repo.clone()));

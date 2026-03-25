@@ -18,5 +18,10 @@ pub trait LinkRepository: Send + Sync {
 
     async fn find_by_user_id(&self, user_id: UserId) -> Result<Vec<Link>, LinkDomainError>;
 
-    async fn increment_clicks(&self, id: u64, now: DateTime<Utc>) -> Result<u64, LinkDomainError>;
+    async fn increment_clicks(
+        &self,
+        id: u64,
+        count: u32,
+        now: DateTime<Utc>,
+    ) -> Result<u64, LinkDomainError>;
 }

@@ -8,7 +8,10 @@ use business::domain::{
 };
 
 use chrono::{DateTime, Utc};
-use sqlx::{prelude::Type, types::Uuid};
+use sqlx::{
+    prelude::{FromRow, Type},
+    types::Uuid,
+};
 
 #[derive(Type)]
 #[sqlx(type_name = "user_status", rename_all = "lowercase")]
@@ -41,7 +44,7 @@ impl From<DbUserStatus> for UserStatus {
     }
 }
 
-#[derive(sqlx::FromRow)]
+#[derive(FromRow)]
 pub struct UserRecord {
     pub id: Uuid,
     pub username: String,
@@ -77,7 +80,7 @@ impl UserRecord {
     }
 }
 
-#[derive(sqlx::FromRow)]
+#[derive(FromRow)]
 pub struct RefreshTokenRecord {
     pub id: Option<i64>,
     pub user_id: Uuid,

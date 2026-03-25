@@ -1,6 +1,6 @@
 use std::{net::SocketAddr, time::Duration};
 
-use infrastructure::db;
+use infrastructure::{db, redis};
 use presentation::build_app;
 use tokio::{net::TcpListener, time::timeout};
 
@@ -18,7 +18,17 @@ async fn main() {
 
     db::run_migrations(&pool).await.unwrap();
 
-    let (states, worker_handle) = app_state::bootstrap(pool, config.jwt).await;
+    let redis_manager = redis::create_connection_manager(&config.redis_url)
+        .await
+        .unwrap();
+
+    let (states, worker_handle) = app_state::bootstrap(
+        pool,
+        redis_manager,
+        config.jwt,
+        config.link_cache_ttl_seconds,
+    )
+    .await;
 
     let app = build_app(states.user, states.link, states.analytics);
 

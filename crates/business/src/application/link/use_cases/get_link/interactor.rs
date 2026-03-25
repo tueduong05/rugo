@@ -77,7 +77,7 @@ impl GetLinkUseCase for GetLinkInteractor {
                 "LinkId should be available".into(),
             )))?;
 
-        if self.link_repo.increment_clicks(link_id, now).await? == 0 {
+        if self.link_repo.increment_clicks(link_id, 1, now).await? == 0 {
             return Err(LinkDomainError::LinkClickLimitReached.into());
         }
 

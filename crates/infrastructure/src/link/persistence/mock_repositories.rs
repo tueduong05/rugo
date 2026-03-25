@@ -74,7 +74,12 @@ impl LinkRepository for MockLinkRepository {
         Ok(user_links.get(&user_id).cloned().unwrap_or_default())
     }
 
-    async fn increment_clicks(&self, id: u64, now: DateTime<Utc>) -> Result<u64, LinkDomainError> {
+    async fn increment_clicks(
+        &self,
+        id: u64,
+        count: u32,
+        now: DateTime<Utc>,
+    ) -> Result<u64, LinkDomainError> {
         let mut ids = self.ids.lock().unwrap();
         let mut short_codes = self.short_codes.lock().unwrap();
 
@@ -82,13 +87,13 @@ impl LinkRepository for MockLinkRepository {
             let is_expired = link.expires_at.is_some_and(|expiry| now > expiry);
             let limit_reached = link
                 .max_clicks
-                .is_some_and(|max| link.current_clicks >= max);
+                .is_some_and(|max| link.current_clicks.saturating_add(count) > max);
 
             if !link.is_active || is_expired || limit_reached {
                 return Ok(0);
             }
 
-            link.current_clicks += 1;
+            link.current_clicks = link.current_clicks.saturating_add(count);
             link.updated_at = now;
 
             let updated_link = link.clone();

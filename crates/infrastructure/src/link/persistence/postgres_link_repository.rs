@@ -112,20 +112,30 @@ impl LinkRepository for PostgresLinkRepository {
     }
 
     #[tracing::instrument(skip(self, now), err, target = "infrastructure")]
-    async fn increment_clicks(&self, id: u64, now: DateTime<Utc>) -> Result<u64, LinkDomainError> {
+    async fn increment_clicks(
+        &self,
+        id: u64,
+        count: u32,
+        now: DateTime<Utc>,
+    ) -> Result<u64, LinkDomainError> {
+        if count == 0 {
+            return Ok(0);
+        }
+
         let result = sqlx::query!(
             r#"
             UPDATE links
             SET 
-                current_clicks = current_clicks + 1,
-                updated_at = $1
-            WHERE id = $2
+                current_clicks = current_clicks + $2,
+                updated_at = $3
+            WHERE id = $1
                 AND is_active = true
-                AND (expires_at IS NULL OR expires_at > $1)
-                AND (max_clicks IS NULL OR current_clicks < max_clicks)
+                AND (expires_at IS NULL OR expires_at > $3)
+                AND (max_clicks IS NULL OR current_clicks + $2 <= max_clicks)
             "#,
+            id as i64,
+            count as i32,
             now,
-            id as i64
         )
         .execute(&self.pool)
         .await
