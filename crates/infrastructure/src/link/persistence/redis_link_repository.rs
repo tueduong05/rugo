@@ -6,20 +6,26 @@ use business::domain::{
     },
 };
 use chrono::{DateTime, Utc};
-use redis::{AsyncCommands, aio::ConnectionManager};
+use redis::{Script, aio::ConnectionManager};
 
 use crate::link::persistence::models::LinkRecord;
 
 pub struct RedisLinkRepository {
     manager: ConnectionManager,
     cache_ttl_seconds: u64,
+    max_clicks_ttl_seconds: u64,
 }
 
 impl RedisLinkRepository {
-    pub fn new(manager: ConnectionManager, cache_ttl_seconds: u64) -> Self {
+    pub fn new(
+        manager: ConnectionManager,
+        cache_ttl_seconds: u64,
+        max_clicks_ttl_seconds: u64,
+    ) -> Self {
         Self {
             manager,
             cache_ttl_seconds,
+            max_clicks_ttl_seconds,
         }
     }
 
@@ -29,8 +35,11 @@ impl RedisLinkRepository {
     fn click_counter_key(id: u64) -> String {
         format!("link:clicks:{}", id)
     }
+    fn max_clicks_key(id: u64) -> String {
+        format!("link:max:{}", id)
+    }
     fn sync_set_key() -> &'static str {
-        "links_pending_sync"
+        "link:pending_sync"
     }
 }
 
@@ -44,8 +53,28 @@ impl LinkRepository for RedisLinkRepository {
             .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
         let mut connection = self.manager.clone();
-        connection
-            .set_ex::<_, _, ()>(key, serialized, self.cache_ttl_seconds)
+        let mut pipeline = redis::pipe();
+        pipeline
+            .atomic()
+            .cmd("SETEX")
+            .arg(&key)
+            .arg(self.cache_ttl_seconds)
+            .arg(&serialized)
+            .ignore();
+
+        if let Some(link_id) = record.id {
+            let max_clicks_key = Self::max_clicks_key(link_id as u64);
+            let max_clicks_value = record.max_clicks.unwrap_or(-1);
+            pipeline
+                .cmd("SETEX")
+                .arg(&max_clicks_key)
+                .arg(self.max_clicks_ttl_seconds)
+                .arg(max_clicks_value)
+                .ignore();
+        }
+
+        pipeline
+            .query_async::<()>(&mut connection)
             .await
             .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
@@ -54,10 +83,7 @@ impl LinkRepository for RedisLinkRepository {
 
     #[tracing::instrument(skip(self), err, target = "infrastructure")]
     async fn find_by_id(&self, _id: u64) -> Result<Option<Link>, LinkDomainError> {
-        Err(BaseDomainError::Unexpected(
-            "find_by_id is unsupported".into(),
-        )
-        .into())
+        Err(BaseDomainError::Unexpected("find_by_id is unsupported".into()).into())
     }
 
     #[tracing::instrument(skip(self, short_code), err, target = "infrastructure")]
@@ -68,8 +94,33 @@ impl LinkRepository for RedisLinkRepository {
         let key = Self::short_code_key(&short_code.to_string());
         let mut connection = self.manager.clone();
 
-        let cached: Option<String> = connection
-            .get(key)
+        let script = Script::new(
+            r#"
+            local link_key = KEYS[1]
+            local link_json = redis.call('GET', link_key)
+
+            if not link_json then
+                return nil
+            end
+
+            local link_obj = cjson.decode(link_json)
+            local link_id = link_obj['id']
+
+            if link_id then
+                local counter_key = 'link:clicks:' .. tostring(link_id)
+                local live_clicks = redis.call('GET', counter_key)
+                if live_clicks then
+                    link_obj['current_clicks'] = tonumber(live_clicks)
+                end
+            end
+
+            return cjson.encode(link_obj)
+            "#,
+        );
+
+        let cached: Option<String> = script
+            .key(key)
+            .invoke_async(&mut connection)
             .await
             .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
@@ -85,10 +136,7 @@ impl LinkRepository for RedisLinkRepository {
 
     #[tracing::instrument(skip(self), err, target = "infrastructure")]
     async fn find_by_user_id(&self, _user_id: UserId) -> Result<Vec<Link>, LinkDomainError> {
-        Err(BaseDomainError::Unexpected(
-            "find_by_user_id is unsupported".into(),
-        )
-        .into())
+        Err(BaseDomainError::Unexpected("find_by_user_id is unsupported".into()).into())
     }
 
     #[tracing::instrument(skip(self, _now), err, target = "infrastructure")]
@@ -103,19 +151,59 @@ impl LinkRepository for RedisLinkRepository {
         }
 
         let counter_key = Self::click_counter_key(id);
+        let max_clicks_key = Self::max_clicks_key(id);
         let sync_key = Self::sync_set_key();
         let mut connection = self.manager.clone();
 
-        let current_clicks: u64 = connection
-            .incr(counter_key, count as i64)
+        // 0 => rejected
+        // 1 => accepted
+        // 2 => backfill from db and retry
+        // TODO: Avoid using magic numbers (0, 1, 2) for return codes
+        let script = Script::new(
+            r#"
+            local counter_key = KEYS[1]
+            local max_clicks_key = KEYS[2]
+            local sync_key = KEYS[3]
+
+            local count = tonumber(ARGV[1])
+            local link_id = ARGV[2]
+
+            if not count or count <= 0 then
+                return 0
+            end
+
+            local max_clicks = redis.call('GET', max_clicks_key)
+            if not max_clicks then
+                return 2
+            end
+
+            local max_value = tonumber(max_clicks)
+            if not max_value then
+                return 2
+            end
+
+            local new_clicks = redis.call('INCRBY', counter_key, count)
+
+            if max_value >= 0 and new_clicks > max_value then
+                redis.call('DECRBY', counter_key, count)
+                return 0
+            end
+
+            redis.call('SADD', sync_key, link_id)
+            return 1
+            "#,
+        );
+
+        let rows_affected: i64 = script
+            .key(counter_key)
+            .key(max_clicks_key)
+            .key(sync_key)
+            .arg(count as i64)
+            .arg(id)
+            .invoke_async(&mut connection)
             .await
             .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
 
-        connection
-            .sadd::<_, _, ()>(sync_key, id)
-            .await
-            .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
-
-        Ok(current_clicks)
+        Ok(rows_affected as u64)
     }
 }

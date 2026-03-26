@@ -69,12 +69,17 @@ pub async fn bootstrap(
     redis_manager: ConnectionManager,
     jwt_config: JwtConfig,
     link_cache_ttl_seconds: u64,
+    link_max_clicks_ttl_seconds: u64,
 ) -> (AppStates, JoinHandle<()>) {
     let user_repo = Arc::new(PostgresUserRepository::new(pool.clone()));
     let session_repo = Arc::new(PostgresSessionRepository::new(pool.clone()));
     let postgres_link_repo: Arc<dyn LinkRepository> =
         Arc::new(PostgresLinkRepository::new(pool.clone()));
-    let redis_link_repo = RedisLinkRepository::new(redis_manager, link_cache_ttl_seconds);
+    let redis_link_repo = RedisLinkRepository::new(
+        redis_manager,
+        link_cache_ttl_seconds,
+        link_max_clicks_ttl_seconds,
+    );
     let link_repo: Arc<dyn LinkRepository> = Arc::new(CacheAsideLinkRepository::new(
         postgres_link_repo.clone(),
         Arc::new(redis_link_repo),

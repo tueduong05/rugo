@@ -54,23 +54,17 @@ impl Link {
         }
     }
 
-    pub fn is_valid(
-        &self,
-        current_time: DateTime<Utc>,
-        current_clicks: u32,
-    ) -> Result<(), LinkDomainError> {
+    pub fn is_active(&self) -> Result<(), LinkDomainError> {
         if !self.is_active {
             return Err(LinkDomainError::LinkNotActive);
         }
+        Ok(())
+    }
 
+    pub fn is_not_expired(&self, current_time: DateTime<Utc>) -> Result<(), LinkDomainError> {
         if self.expires_at.is_some_and(|expiry| current_time > expiry) {
             return Err(LinkDomainError::LinkExpired);
         }
-
-        if self.max_clicks.is_some_and(|max| current_clicks >= max) {
-            return Err(LinkDomainError::LinkClickLimitReached);
-        }
-
         Ok(())
     }
 }

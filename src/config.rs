@@ -12,6 +12,7 @@ pub struct AppConfig {
     pub redis_url: String,
     pub jwt: JwtConfig,
     pub link_cache_ttl_seconds: u64,
+    pub link_max_clicks_ttl_seconds: u64,
 }
 
 impl AppConfig {
@@ -26,6 +27,7 @@ impl AppConfig {
                 refresh_token_seconds: get_required_u64_env("JWT_REFRESH_TOKEN_SECONDS")?,
             },
             link_cache_ttl_seconds: get_required_u64_env("LINK_CACHE_TTL_SECONDS")?,
+            link_max_clicks_ttl_seconds: get_required_u64_env("LINK_MAX_CLICKS_TTL_SECONDS")?,
         })
     }
 }

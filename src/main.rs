@@ -27,6 +27,7 @@ async fn main() {
         redis_manager,
         config.jwt,
         config.link_cache_ttl_seconds,
+        config.link_max_clicks_ttl_seconds,
     )
     .await;
 

@@ -55,7 +55,8 @@ impl GetLinkUseCase for GetLinkInteractor {
                 LinkDomainError::from(BaseDomainError::ResourceNotFound("Link".into()))
             })?;
 
-        link.is_valid(Utc::now(), link.current_clicks)?;
+        link.is_active()?;
+        link.is_not_expired(Utc::now())?;
 
         let original_link = match (cmd.password, &link.hashed_password) {
             (Some(p), Some(hashed)) => {
