@@ -11,19 +11,19 @@ use chrono::{DateTime, Utc};
 use tokio::sync::{Mutex, Notify};
 
 pub struct CacheAsideLinkRepository {
-    postgres_repo: Arc<dyn LinkRepository>,
-    redis_repo: Arc<dyn LinkRepository>,
+    pg_link_repo: Arc<dyn LinkRepository>,
+    redis_link_repo: Arc<dyn LinkRepository>,
     backfill_in_flight: Mutex<HashMap<u64, Arc<Notify>>>,
 }
 
 impl CacheAsideLinkRepository {
     pub fn new(
-        postgres_repo: Arc<dyn LinkRepository>,
-        redis_repo: Arc<dyn LinkRepository>,
+        pg_link_repo: Arc<dyn LinkRepository>,
+        redis_link_repo: Arc<dyn LinkRepository>,
     ) -> Self {
         Self {
-            postgres_repo,
-            redis_repo,
+            pg_link_repo,
+            redis_link_repo,
             backfill_in_flight: Mutex::new(HashMap::new()),
         }
     }
@@ -33,16 +33,16 @@ impl CacheAsideLinkRepository {
 impl LinkRepository for CacheAsideLinkRepository {
     #[tracing::instrument(skip(self, link), err, target = "infrastructure")]
     async fn create(&self, link: &Link) -> Result<(), LinkDomainError> {
-        self.postgres_repo.create(link).await?;
+        self.pg_link_repo.create(link).await?;
 
-        self.redis_repo.create(link).await?;
+        self.redis_link_repo.create(link).await?;
 
         Ok(())
     }
 
     #[tracing::instrument(skip(self), err, target = "infrastructure")]
     async fn find_by_id(&self, id: u64) -> Result<Option<Link>, LinkDomainError> {
-        self.postgres_repo.find_by_id(id).await
+        self.pg_link_repo.find_by_id(id).await
     }
 
     #[tracing::instrument(skip(self, short_code), err, target = "infrastructure")]
@@ -50,14 +50,14 @@ impl LinkRepository for CacheAsideLinkRepository {
         &self,
         short_code: &ShortCode,
     ) -> Result<Option<Link>, LinkDomainError> {
-        if let Some(link) = self.redis_repo.find_by_short_code(short_code).await? {
+        if let Some(link) = self.redis_link_repo.find_by_short_code(short_code).await? {
             return Ok(Some(link));
         }
 
-        let link = self.postgres_repo.find_by_short_code(short_code).await?;
+        let link = self.pg_link_repo.find_by_short_code(short_code).await?;
 
         if let Some(ref link) = link {
-            self.redis_repo.create(link).await?;
+            self.redis_link_repo.create(link).await?;
         }
 
         Ok(link)
@@ -65,7 +65,7 @@ impl LinkRepository for CacheAsideLinkRepository {
 
     #[tracing::instrument(skip(self), err, target = "infrastructure")]
     async fn find_by_user_id(&self, user_id: UserId) -> Result<Vec<Link>, LinkDomainError> {
-        self.postgres_repo.find_by_user_id(user_id).await
+        self.pg_link_repo.find_by_user_id(user_id).await
     }
 
     #[tracing::instrument(skip(self, now), err, target = "infrastructure")]
@@ -75,7 +75,10 @@ impl LinkRepository for CacheAsideLinkRepository {
         count: u32,
         now: DateTime<Utc>,
     ) -> Result<u64, LinkDomainError> {
-        let redis_result = self.redis_repo.increment_clicks(id, count, now).await?;
+        let redis_result = self
+            .redis_link_repo
+            .increment_clicks(id, count, now)
+            .await?;
 
         if redis_result != 2 {
             return Ok(redis_result);
@@ -94,9 +97,12 @@ impl LinkRepository for CacheAsideLinkRepository {
 
         if is_leader {
             let backfill_result = async {
-                if let Some(link) = self.postgres_repo.find_by_id(id).await? {
-                    self.redis_repo.create(&link).await?;
-                    let retried = self.redis_repo.increment_clicks(id, count, now).await?;
+                if let Some(link) = self.pg_link_repo.find_by_id(id).await? {
+                    self.redis_link_repo.create(&link).await?;
+                    let retried = self
+                        .redis_link_repo
+                        .increment_clicks(id, count, now)
+                        .await?;
                     if retried == 2 {
                         return Err(
                             BaseDomainError::Infrastructure("Backfill failed".into()).into()
@@ -118,7 +124,10 @@ impl LinkRepository for CacheAsideLinkRepository {
         }
 
         notify.notified().await;
-        let retried = self.redis_repo.increment_clicks(id, count, now).await?;
+        let retried = self
+            .redis_link_repo
+            .increment_clicks(id, count, now)
+            .await?;
         if retried == 2 {
             return Err(BaseDomainError::Infrastructure("Backfill failed".into()).into());
         }

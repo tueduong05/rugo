@@ -41,6 +41,181 @@ impl RedisLinkRepository {
     fn sync_set_key() -> &'static str {
         "link:pending_sync"
     }
+    fn inflight_sync_set_key() -> &'static str {
+        "link:inflight_sync"
+    }
+
+    #[tracing::instrument(skip(self), err, target = "infrastructure")]
+    pub async fn claim_pending_clicks(&self) -> Result<Vec<(u64, u32)>, LinkDomainError> {
+        let pending_sync_key = Self::sync_set_key();
+        let inflight_sync_key = Self::inflight_sync_set_key();
+        let mut connection = self.manager.clone();
+
+        let script = Script::new(
+            r#"
+            local pending_sync_key = KEYS[1]
+            local inflight_sync_key = KEYS[2]
+            local ids = redis.call('SMEMBERS', pending_sync_key)
+
+            if not ids or #ids == 0 then
+                return {}
+            end
+
+            local result = {}
+
+            for _, link_id in ipairs(ids) do
+                local counter_key = 'link:clicks:' .. tostring(link_id)
+                local clicks = redis.call('GET', counter_key)
+
+                redis.call('SREM', pending_sync_key, link_id)
+                redis.call('SADD', inflight_sync_key, link_id)
+
+                if clicks then
+                    table.insert(result, link_id)
+                    table.insert(result, clicks)
+                end
+            end
+
+            return result
+            "#,
+        );
+
+        let flattened: Vec<String> = script
+            .key(pending_sync_key)
+            .key(inflight_sync_key)
+            .invoke_async(&mut connection)
+            .await
+            .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
+
+        let mut claimed = Vec::with_capacity(flattened.len() / 2);
+        for pair in flattened.chunks_exact(2) {
+            let link_id = pair[0]
+                .parse::<u64>()
+                .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
+            let count = pair[1]
+                .parse::<u32>()
+                .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
+            if count > 0 {
+                claimed.push((link_id, count));
+            }
+        }
+
+        Ok(claimed)
+    }
+
+    #[tracing::instrument(skip(self), err, target = "infrastructure")]
+    pub async fn ack_persisted_clicks(
+        &self,
+        link_id: u64,
+        persisted_count: u32,
+    ) -> Result<(), LinkDomainError> {
+        let counter_key = Self::click_counter_key(link_id);
+        let pending_sync_key = Self::sync_set_key();
+        let inflight_sync_key = Self::inflight_sync_set_key();
+        let mut connection = self.manager.clone();
+
+        let script = Script::new(
+            r#"
+            local counter_key = KEYS[1]
+            local pending_sync_key = KEYS[2]
+            local inflight_sync_key = KEYS[3]
+
+            local link_id = ARGV[1]
+            local persisted_count = tonumber(ARGV[2]) or 0
+
+            local current_clicks = redis.call('GET', counter_key)
+            local current_value = tonumber(current_clicks) or 0
+            local remaining = current_value - persisted_count
+
+            if remaining <= 0 then
+                redis.call('DEL', counter_key)
+                redis.call('SREM', inflight_sync_key, link_id)
+                return 0
+            end
+
+            redis.call('SET', counter_key, remaining)
+            redis.call('SREM', inflight_sync_key, link_id)
+            redis.call('SADD', pending_sync_key, link_id)
+            return remaining
+            "#,
+        );
+
+        script
+            .key(counter_key)
+            .key(pending_sync_key)
+            .key(inflight_sync_key)
+            .arg(link_id)
+            .arg(persisted_count as i64)
+            .invoke_async::<i64>(&mut connection)
+            .await
+            .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
+
+        Ok(())
+    }
+
+    #[tracing::instrument(skip(self), err, target = "infrastructure")]
+    pub async fn release_claimed_click(&self, link_id: u64) -> Result<(), LinkDomainError> {
+        let pending_sync_key = Self::sync_set_key();
+        let inflight_sync_key = Self::inflight_sync_set_key();
+        let mut connection = self.manager.clone();
+
+        let script = Script::new(
+            r#"
+            local pending_sync_key = KEYS[1]
+            local inflight_sync_key = KEYS[2]
+            local link_id = ARGV[1]
+
+            redis.call('SREM', inflight_sync_key, link_id)
+            redis.call('SADD', pending_sync_key, link_id)
+            return 1
+            "#,
+        );
+
+        script
+            .key(pending_sync_key)
+            .key(inflight_sync_key)
+            .arg(link_id)
+            .invoke_async::<i64>(&mut connection)
+            .await
+            .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
+
+        Ok(())
+    }
+
+    #[tracing::instrument(skip(self), err, target = "infrastructure")]
+    pub async fn requeue_inflight_clicks(&self) -> Result<(), LinkDomainError> {
+        let pending_sync_key = Self::sync_set_key();
+        let inflight_sync_key = Self::inflight_sync_set_key();
+        let mut connection = self.manager.clone();
+
+        let script = Script::new(
+            r#"
+            local pending_sync_key = KEYS[1]
+            local inflight_sync_key = KEYS[2]
+            local ids = redis.call('SMEMBERS', inflight_sync_key)
+
+            if not ids or #ids == 0 then
+                return 0
+            end
+
+            for _, link_id in ipairs(ids) do
+                redis.call('SADD', pending_sync_key, link_id)
+                redis.call('SREM', inflight_sync_key, link_id)
+            end
+
+            return #ids
+            "#,
+        );
+
+        script
+            .key(pending_sync_key)
+            .key(inflight_sync_key)
+            .invoke_async::<i64>(&mut connection)
+            .await
+            .map_err(|e| BaseDomainError::Infrastructure(e.to_string()))?;
+
+        Ok(())
+    }
 }
 
 #[async_trait::async_trait]

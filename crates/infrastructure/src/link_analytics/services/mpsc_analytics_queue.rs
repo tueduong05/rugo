@@ -3,6 +3,7 @@ use business::domain::common::{
 };
 use tokio::sync::mpsc;
 
+// NOTE: Use a better queue and outbox to avoid data lost when crashes
 pub struct MPSCAnalyticsQueue {
     sender: mpsc::Sender<AnalyticsEvent>,
 }

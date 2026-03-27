@@ -35,6 +35,7 @@ use infrastructure::{
         persistence::cache_aside_link_repository::CacheAsideLinkRepository,
         persistence::postgres_link_repository::PostgresLinkRepository,
         persistence::redis_link_repository::RedisLinkRepository,
+        runner::run_link_clicks_sync_worker,
         services::short_code_services::RandomShortCodeGenerator,
     },
     link_analytics::{
@@ -73,16 +74,15 @@ pub async fn bootstrap(
 ) -> (AppStates, JoinHandle<()>) {
     let user_repo = Arc::new(PostgresUserRepository::new(pool.clone()));
     let session_repo = Arc::new(PostgresSessionRepository::new(pool.clone()));
-    let postgres_link_repo: Arc<dyn LinkRepository> =
-        Arc::new(PostgresLinkRepository::new(pool.clone()));
-    let redis_link_repo = RedisLinkRepository::new(
+    let pg_link_repo: Arc<dyn LinkRepository> = Arc::new(PostgresLinkRepository::new(pool.clone()));
+    let redis_link_repo = Arc::new(RedisLinkRepository::new(
         redis_manager,
         link_cache_ttl_seconds,
         link_max_clicks_ttl_seconds,
-    );
+    ));
     let link_repo: Arc<dyn LinkRepository> = Arc::new(CacheAsideLinkRepository::new(
-        postgres_link_repo.clone(),
-        Arc::new(redis_link_repo),
+        pg_link_repo.clone(),
+        redis_link_repo.clone(),
     ));
     let analytics_repo = Arc::new(PostgresAnalyticsRepository::new(pool.clone()));
 
@@ -106,10 +106,19 @@ pub async fn bootstrap(
 
     let geo = MockGeoService;
     let ua = WootheeUserAgentParser::new();
-    let worker = AnalyticsBatchWorker::new(analytics_repo.clone(), geo, ua);
+    let analytics_batch_worker = AnalyticsBatchWorker::new(analytics_repo.clone(), geo, ua);
 
-    let worker_handle = tokio::spawn(async move {
-        run_analytics_worker::<MockGeoService, WootheeUserAgentParser>(rx, worker).await;
+    let analytics_worker_handle = tokio::spawn(async move {
+        run_analytics_worker::<MockGeoService, WootheeUserAgentParser>(rx, analytics_batch_worker)
+            .await;
+    });
+
+    let link_clicks_sync_worker_handle = tokio::spawn(async move {
+        run_link_clicks_sync_worker(redis_link_repo, pg_link_repo).await;
+    });
+
+    let background_workers_handle = tokio::spawn(async move {
+        let _ = tokio::join!(analytics_worker_handle, link_clicks_sync_worker_handle);
     });
 
     let user_state = UserState {
@@ -161,6 +170,6 @@ pub async fn bootstrap(
             link: link_state,
             analytics: analytics_state,
         },
-        worker_handle,
+        background_workers_handle,
     )
 }
