@@ -56,3 +56,93 @@ impl RefreshToken {
         self.version += 1;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use chrono::Duration;
+
+    use super::*;
+
+    #[test]
+    fn test_refresh_token_is_valid() {
+        let now = Utc::now();
+        let token = RefreshToken {
+            id: Some(1),
+            user_id: UserId::generate(),
+            token: Some("refresh-token".to_string()),
+            expires_at: now + Duration::minutes(10),
+            is_used: false,
+            is_revoked: false,
+            version: 0,
+        };
+
+        assert!(token.is_valid(now));
+    }
+
+    #[test]
+    fn test_refresh_token_invalid_when_used() {
+        let now = Utc::now();
+        let token = RefreshToken {
+            id: Some(1),
+            user_id: UserId::generate(),
+            token: Some("refresh-token".to_string()),
+            expires_at: now + Duration::minutes(10),
+            is_used: true,
+            is_revoked: false,
+            version: 0,
+        };
+
+        assert!(!token.is_valid(now));
+    }
+
+    #[test]
+    fn test_refresh_token_invalid_when_revoked() {
+        let now = Utc::now();
+        let token = RefreshToken {
+            id: Some(1),
+            user_id: UserId::generate(),
+            token: Some("refresh-token".to_string()),
+            expires_at: now + Duration::minutes(10),
+            is_used: false,
+            is_revoked: true,
+            version: 0,
+        };
+
+        assert!(!token.is_valid(now));
+    }
+
+    #[test]
+    fn test_refresh_token_invalid_when_expired() {
+        let now = Utc::now();
+        let token = RefreshToken {
+            id: Some(1),
+            user_id: UserId::generate(),
+            token: Some("refresh-token".to_string()),
+            expires_at: now - Duration::minutes(1),
+            is_used: false,
+            is_revoked: false,
+            version: 0,
+        };
+
+        assert!(!token.is_valid(now));
+    }
+
+    #[test]
+    fn test_refresh_token_mark_used() {
+        let now = Utc::now();
+        let mut token = RefreshToken {
+            id: Some(1),
+            user_id: UserId::generate(),
+            token: Some("refresh-token".to_string()),
+            expires_at: now + Duration::minutes(10),
+            is_used: false,
+            is_revoked: false,
+            version: 3,
+        };
+
+        token.mark_used();
+
+        assert!(token.is_used);
+        assert_eq!(token.version, 4);
+    }
+}
