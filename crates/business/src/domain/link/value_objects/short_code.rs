@@ -31,3 +31,65 @@ impl fmt::Display for ShortCode {
         write!(f, "{}", self.0)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_short_code_valid() {
+        let valid_short_codes = vec![
+            "abc".to_string(),
+            "abc123".to_string(),
+            "abc_123".to_string(),
+            "abc-123".to_string(),
+            "A1_b-2".to_string(),
+            "a".repeat(20),
+        ];
+
+        for short_code in valid_short_codes {
+            assert!(
+                ShortCode::new(short_code.clone()).is_ok(),
+                "Should be valid: {}",
+                short_code
+            );
+        }
+    }
+
+    #[test]
+    fn test_short_code_invalid_length() {
+        let invalid_short_codes = vec![
+            "ab".to_string(),
+            "a".to_string(),
+            "".to_string(),
+            "a".repeat(21),
+        ];
+
+        for short_code in invalid_short_codes {
+            assert!(
+                ShortCode::new(short_code.clone()).is_err(),
+                "Should be invalid length: {}",
+                short_code
+            );
+        }
+    }
+
+    #[test]
+    fn test_short_code_invalid_trim() {
+        assert!(ShortCode::new(" abc".into()).is_err());
+        assert!(ShortCode::new("abc ".into()).is_err());
+    }
+
+    #[test]
+    fn test_short_code_invalid_characters() {
+        let invalid_short_codes = vec!["abc!", "abc.def", "abc/123", "một-hai", "a b c"];
+
+        for short_code in invalid_short_codes {
+            assert!(
+                ShortCode::new(short_code.to_string()).is_err(),
+                "Should be invalid: {}",
+                short_code
+            );
+        }
+    }
+}

@@ -68,3 +68,122 @@ impl Link {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use chrono::Duration;
+
+    use super::*;
+
+    #[test]
+    fn test_link_is_active() {
+        let link = Link::new(CreateLinkCommand {
+            user_id: Some(UserId::generate()),
+            original_link: OriginalLink::new("https://example.com".to_string())
+                .expect("Valid original link"),
+            short_code: ShortCode::new("example_123".to_string()).expect("Valid short code"),
+            is_custom: false,
+            expires_at: None,
+            hashed_password: None,
+            max_clicks: None,
+            is_active: true,
+        });
+
+        assert!(link.is_active().is_ok());
+    }
+
+    #[test]
+    fn test_link_invalid_when_inactive() {
+        let link = Link::new(CreateLinkCommand {
+            user_id: Some(UserId::generate()),
+            original_link: OriginalLink::new("https://example.com".to_string())
+                .expect("Valid original link"),
+            short_code: ShortCode::new("example_123".to_string()).expect("Valid short code"),
+            is_custom: false,
+            expires_at: None,
+            hashed_password: None,
+            max_clicks: None,
+            is_active: false,
+        });
+
+        assert!(matches!(
+            link.is_active(),
+            Err(LinkDomainError::LinkNotActive)
+        ));
+    }
+
+    #[test]
+    fn test_link_not_expired_without_expiry() {
+        let now = Utc::now();
+        let link = Link::new(CreateLinkCommand {
+            user_id: Some(UserId::generate()),
+            original_link: OriginalLink::new("https://example.com".to_string())
+                .expect("Valid original link"),
+            short_code: ShortCode::new("example_123".to_string()).expect("Valid short code"),
+            is_custom: false,
+            expires_at: None,
+            hashed_password: None,
+            max_clicks: None,
+            is_active: true,
+        });
+
+        assert!(link.is_not_expired(now).is_ok());
+    }
+
+    #[test]
+    fn test_link_not_expired_when_expiry_in_future() {
+        let now = Utc::now();
+        let link = Link::new(CreateLinkCommand {
+            user_id: Some(UserId::generate()),
+            original_link: OriginalLink::new("https://example.com".to_string())
+                .expect("Valid original link"),
+            short_code: ShortCode::new("example_123".to_string()).expect("Valid short code"),
+            is_custom: false,
+            expires_at: Some(now + Duration::minutes(5)),
+            hashed_password: None,
+            max_clicks: None,
+            is_active: true,
+        });
+
+        assert!(link.is_not_expired(now).is_ok());
+    }
+
+    #[test]
+    fn test_link_invalid_when_expired() {
+        let now = Utc::now();
+        let link = Link::new(CreateLinkCommand {
+            user_id: Some(UserId::generate()),
+            original_link: OriginalLink::new("https://example.com".to_string())
+                .expect("Valid original link"),
+            short_code: ShortCode::new("example_123".to_string()).expect("Valid short code"),
+            is_custom: false,
+            expires_at: Some(now - Duration::minutes(1)),
+            hashed_password: None,
+            max_clicks: None,
+            is_active: true,
+        });
+
+        assert!(matches!(
+            link.is_not_expired(now),
+            Err(LinkDomainError::LinkExpired)
+        ));
+    }
+
+    #[test]
+    fn test_link_not_expired_when_expiry_equals_now() {
+        let now = Utc::now();
+        let link = Link::new(CreateLinkCommand {
+            user_id: Some(UserId::generate()),
+            original_link: OriginalLink::new("https://example.com".to_string())
+                .expect("Valid original link"),
+            short_code: ShortCode::new("example_123".to_string()).expect("Valid short code"),
+            is_custom: false,
+            expires_at: Some(now),
+            hashed_password: None,
+            max_clicks: None,
+            is_active: true,
+        });
+
+        assert!(link.is_not_expired(now).is_ok());
+    }
+}
