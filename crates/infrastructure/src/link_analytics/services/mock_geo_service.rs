@@ -26,10 +26,7 @@ impl GeoLookupService for MockGeoService {
 
         let (country, city) = mock_pool[index];
 
-        Ok(GeoData {
-            country_code: country.to_string(),
-            city: city.to_string(),
-        })
+        Ok(GeoData::new(country.to_string(), city.to_string()))
     }
 
     async fn lookup_bulk(&self, ips: Vec<IpAddr>) -> Result<Vec<GeoData>, String> {

@@ -53,3 +53,44 @@ impl LinkAnalytics {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_link_analytics_valid() {
+        let analytics = LinkAnalytics::new(
+            1,
+            Some("https://example.com".to_string()),
+            Some("Mozilla/5.0".to_string()),
+            UserAgent::new(
+                "Chrome".to_string(),
+                "Windows".to_string(),
+                "Desktop".to_string(),
+            ),
+            GeoData::new("VN".to_string(), "Hanoi".to_string()),
+            "203.0.113.42".parse().expect("valid ip"),
+            Utc::now(),
+        );
+
+        assert_eq!(analytics.link_id, 1);
+        assert_eq!(analytics.masked_ip, "203.0.113.0");
+    }
+
+    #[test]
+    fn test_mask_ip_ipv4() {
+        assert_eq!(
+            LinkAnalytics::mask_ip("203.0.113.42".parse().expect("valid ip")),
+            "203.0.113.0"
+        );
+    }
+
+    #[test]
+    fn test_mask_ip_ipv6() {
+        assert_eq!(
+            LinkAnalytics::mask_ip("2001:db8:abcd:12::1".parse().expect("valid ip")),
+            "2001:db8:abcd:12:0:0:0:0"
+        );
+    }
+}

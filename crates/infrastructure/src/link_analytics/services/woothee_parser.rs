@@ -21,17 +21,17 @@ impl UserAgentParser for WootheeUserAgentParser {
         let result = ua_string.as_ref().and_then(|ua| self.parser.parse(ua));
 
         match result {
-            Some(data) => UserAgent {
-                browser: data.name.to_string(),
-                os: data.os.to_string(),
-                device: data.category.to_string(),
-            },
+            Some(data) => UserAgent::new(
+                data.name.to_string(),
+                data.os.to_string(),
+                data.category.to_string(),
+            ),
 
-            None => UserAgent {
-                browser: "Unknown".to_string(),
-                os: "Unknown".to_string(),
-                device: "Unknown".to_string(),
-            },
+            None => UserAgent::new(
+                "Unknown".to_string(),
+                "Unknown".to_string(),
+                "Unknown".to_string(),
+            ),
         }
     }
 }
